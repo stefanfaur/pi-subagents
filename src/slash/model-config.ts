@@ -12,6 +12,7 @@ import {
     Key,
     visibleWidth,
     truncateToWidth,
+    wrapTextWithAnsi,
     type SelectItem,
     type SelectListTheme,
     type TUI,
@@ -107,9 +108,19 @@ function modelListTheme(theme: Theme): SelectListTheme {
 }
 
 /**
- * Width-aware text truncation helper that preserves ANSI.
+ * Wrap text across multiple lines with indentation, preserving ANSI.
+ * Returns individual lines (already indented).
  */
-function fitLine(text: string, width: number): string {
+function wrapIndented(text: string, width: number, indent: string): string[] {
+    const avail = width - visibleWidth(indent);
+    if (avail <= 0) return [indent + text];
+    return wrapTextWithAnsi(text, avail).map((line) => indent + line);
+}
+
+/**
+ * Truncate a single line with ellipsis. Only for UI chrome (borders, help).
+ */
+function truncLine(text: string, width: number): string {
     if (visibleWidth(text) <= width) return text;
     return truncateToWidth(text, width);
 }
@@ -149,7 +160,17 @@ class ModelConfigWizard {
 
         // Build agent list
         const agentItems = buildAgentItems(agents, theme);
-        this.agentList = new SelectList(agentItems, Math.min(agentItems.length, 12), agentListTheme(theme));
+        this.agentList = new SelectList(
+            agentItems,
+            Math.min(agentItems.length, 12),
+            agentListTheme(theme),
+            {
+                truncatePrimary: (ctx) => {
+                    if (visibleWidth(ctx.text) <= ctx.maxWidth) return ctx.text;
+                    return truncateToWidth(ctx.text, ctx.maxWidth);
+                },
+            },
+        );
         this.agentList.onSelect = (item) => this.onAgentSelected(item);
         this.agentList.onCancel = () => done(null);
     }
@@ -164,6 +185,12 @@ class ModelConfigWizard {
             this.modelItems,
             Math.min(this.modelItems.length, 14),
             modelListTheme(this.theme),
+            {
+                truncatePrimary: (ctx) => {
+                    if (visibleWidth(ctx.text) <= ctx.maxWidth) return ctx.text;
+                    return truncateToWidth(ctx.text, ctx.maxWidth);
+                },
+            },
         );
         const defaultModelIdx = getDefaultModelIndex(this.models, agent);
         this.modelSelect.setSelectedIndex(defaultModelIdx);
@@ -211,20 +238,20 @@ class ModelConfigWizard {
         }
 
         const t = this.theme;
-        const w = Math.max(width - 2, 60);
+        const w = width - 2;
         const lines: string[] = [];
 
         // --- Header ---
-        lines.push(fitLine(t.fg("borderAccent", "─".repeat(w)), w));
-        lines.push(fitLine("  " + t.fg("accent", t.bold("Subagent Model Configuration")), w));
-        lines.push(fitLine(t.fg("borderAccent", "─".repeat(w)), w));
+        lines.push(truncLine(t.fg("borderAccent", "─".repeat(w)), w));
+        lines.push(truncLine("  " + t.fg("accent", t.bold("Subagent Model Configuration")), w));
+        lines.push(truncLine(t.fg("borderAccent", "─".repeat(w)), w));
 
         // --- Agent Section ---
         lines.push("");
 
         if (this.step === "agent") {
             // Active agent selection
-            lines.push(fitLine("  " + t.fg("accent", t.bold("AGENTS")) + t.fg("dim", " — select an agent to configure"), w));
+            lines.push(truncLine("  " + t.fg("accent", t.bold("AGENTS")) + t.fg("dim", " — select an agent to configure"), w));
             lines.push("");
 
             // Render agent list
@@ -234,24 +261,30 @@ class ModelConfigWizard {
             }
 
             lines.push("");
-            lines.push(fitLine("  " + t.fg("dim", "↑↓ navigate · enter select · esc cancel"), w));
+            lines.push(truncLine("  " + t.fg("dim", "↑↓ navigate · enter select · esc cancel"), w));
         } else {
             // Agent section when model is being selected (show selected agent info)
-            lines.push(fitLine("  " + t.fg("dim", "AGENT"), w));
+            lines.push(truncLine("  " + t.fg("dim", "AGENT"), w));
             const agentName = this.selectedAgent?.name ?? "";
             const agentSource = this.selectedAgent?.source ?? "";
-            lines.push(fitLine(
-                "  " + t.fg("accent", t.bold(agentName)) + "  " + t.fg("dim", agentSource),
+            lines.push(...wrapIndented(
+                t.fg("accent", t.bold(agentName)) + "  " + t.fg("dim", agentSource),
                 w,
+                "  ",
             ));
             if (this.selectedAgent?.description) {
-                lines.push(fitLine("  " + t.fg("muted", this.selectedAgent.description), w));
+                lines.push("");
+                lines.push(...wrapIndented(
+                    t.fg("muted", this.selectedAgent.description),
+                    w,
+                    "  ",
+                ));
             }
         }
 
         // --- Divider ---
         lines.push("");
-        lines.push(fitLine(t.fg("border", "─".repeat(w)), w));
+        lines.push(truncLine(t.fg("border", "─".repeat(w)), w));
         lines.push("");
 
         // --- Model Section ---
@@ -259,11 +292,12 @@ class ModelConfigWizard {
             const currentModel = this.selectedAgent.model
                 ? t.fg("accent", this.selectedAgent.model)
                 : t.fg("dim", "inheriting default");
-            lines.push(fitLine(
-                "  " + t.fg("accent", t.bold("MODEL"))
+            lines.push(...wrapIndented(
+                t.fg("accent", t.bold("MODEL"))
                 + t.fg("dim", ` for "${this.selectedAgent.name}"`)
                 + t.fg("dim", " — current: ") + currentModel,
                 w,
+                "  ",
             ));
             lines.push("");
 
@@ -274,17 +308,17 @@ class ModelConfigWizard {
             }
 
             lines.push("");
-            lines.push(fitLine(
+            lines.push(truncLine(
                 "  " + t.fg("dim", "↑↓ navigate · enter select · esc back to agents"),
                 w,
             ));
         } else {
-            lines.push(fitLine("  " + t.fg("dim", "MODEL — select an agent first"), w));
+            lines.push(truncLine("  " + t.fg("dim", "MODEL — select an agent first"), w));
         }
 
         // --- Footer border ---
         lines.push("");
-        lines.push(fitLine(t.fg("borderAccent", "─".repeat(w)), w));
+        lines.push(truncLine(t.fg("borderAccent", "─".repeat(w)), w));
 
         this.cachedWidth = width;
         this.cachedLines = lines;
