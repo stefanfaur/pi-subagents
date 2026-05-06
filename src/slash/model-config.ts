@@ -199,6 +199,9 @@ class ModelConfigWizard {
         } else if (this.step === "model" && this.modelSelect) {
             this.modelSelect.handleInput(data);
         }
+        // Invalidate outer cache — SelectList changed its state but our
+        // cached lines still contain the old rendering
+        this.invalidate();
         this.tui.requestRender();
     }
 
