@@ -4,6 +4,7 @@ import * as path from "node:path";
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { Key, matchesKey } from "@mariozechner/pi-tui";
 import { discoverAgents, discoverAgentsAll, type ChainConfig } from "../agents/agents.ts";
+import { configureSubagentModel } from "./model-config.ts";
 import type { SubagentParamsLike } from "../runs/foreground/subagent-executor.ts";
 import { isParallelStep, type ChainStep } from "../shared/settings.ts";
 import type { SlashSubagentResponse, SlashSubagentUpdate } from "./slash-bridge.ts";
@@ -515,6 +516,13 @@ export function registerSlashCommands(
 		description: "Show subagent diagnostics",
 		handler: async (_args, ctx) => {
 			await runSlashSubagent(pi, ctx, { action: "doctor" });
+		},
+	});
+
+	pi.registerCommand("subagents-model", {
+		description: "Configure default models for builtin subagents",
+		handler: async (_args, ctx) => {
+			await configureSubagentModel(ctx);
 		},
 	});
 
