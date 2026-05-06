@@ -129,6 +129,7 @@ class ModelConfigWizard {
     private agents: AgentConfig[];
     private models: { provider: string; id: string }[];
     private theme: Theme;
+    private tui: TUI;
     private done: (result: { agent: AgentConfig; modelChoice: string } | null) => void;
     private cachedWidth?: number;
     private cachedLines?: string[];
@@ -143,6 +144,7 @@ class ModelConfigWizard {
         this.agents = agents;
         this.models = models;
         this.theme = theme;
+        this.tui = tui;
         this.done = done;
 
         // Build agent list
@@ -172,10 +174,12 @@ class ModelConfigWizard {
             this.selectedAgent = null;
             this.modelSelect = null;
             this.invalidate();
+            this.tui.requestRender();
         };
 
         this.step = "model";
         this.invalidate();
+        this.tui.requestRender();
     }
 
     private onModelSelected(item: SelectItem): void {
@@ -195,6 +199,7 @@ class ModelConfigWizard {
         } else if (this.step === "model" && this.modelSelect) {
             this.modelSelect.handleInput(data);
         }
+        this.tui.requestRender();
     }
 
     render(width: number): string[] {
