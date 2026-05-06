@@ -30,6 +30,6 @@ When the question is broad enough to benefit from parallel work, use the `subage
 
 - **codebase-locator** — locates files and directories via bash (rg/find/ls). Returns file paths with brief descriptions.
 - **codebase-analyzer** — reads files deeply, traces call chains, explains logic with file:line references.
-- **web-researcher** — researches external docs, APIs, libraries via web search. Requires pi-web-access. Skip gracefully if unavailable.
+- **web-researcher** — researches external docs, APIs, libraries via web search. Skip gracefully if unavailable.
 
 All three are read-only specialists. Prefer sub-agents when there are multiple independent areas to investigate, but use direct `read`/`bash` for focused or small-scope questions.
