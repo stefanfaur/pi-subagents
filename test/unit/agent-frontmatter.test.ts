@@ -683,3 +683,55 @@ Inspect project
 		}
 	});
 });
+
+describe("explore subagent family — discovery", () => {
+	it("all four explore agents are discovered as builtins with correct properties", () => {
+		const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pi-subagents-explore-discovery-"));
+		const homeDir = fs.mkdtempSync(path.join(os.tmpdir(), "pi-subagents-explore-discovery-home-"));
+		tempDirs.push(dir);
+		tempDirs.push(homeDir);
+		const previousHome = process.env.HOME;
+		const previousUserProfile = process.env.USERPROFILE;
+
+		try {
+			process.env.HOME = homeDir;
+			process.env.USERPROFILE = homeDir;
+			const builtins = discoverAgentsAll(dir).builtin;
+
+			// Coordinator
+			const explore = builtins.find((a) => a.name === "explore" && a.source === "builtin");
+			assert.ok(explore, "explore should exist");
+			assert.equal(explore.inheritProjectContext, true);
+			assert.equal(explore.inheritSkills, false);
+			assert.equal(explore.systemPromptMode, "replace");
+			assert.ok(explore.tools?.includes("subagent"), "explore should have subagent tool");
+			assert.ok(explore.tools?.includes("contact_supervisor"), "explore should have contact_supervisor");
+			assert.ok(explore.tools?.includes("write"), "explore should have write tool");
+
+			// Leaf agents
+			for (const name of ["code-searcher", "code-analyzer", "web-researcher"]) {
+				const agent = builtins.find((a) => a.name === name && a.source === "builtin");
+				assert.ok(agent, `${name} should exist`);
+				assert.equal(agent.inheritProjectContext, false, `${name} inheritProjectContext`);
+				assert.equal(agent.inheritSkills, false, `${name} inheritSkills`);
+				assert.equal(agent.defaultContext, "fork", `${name} defaultContext`);
+				assert.equal(agent.maxSubagentDepth, 0, `${name} maxSubagentDepth`);
+				assert.ok(agent.tools && agent.tools.length > 0, `${name} should have tools`);
+				assert.ok(!agent.tools?.includes("subagent"), `${name} should NOT have subagent tool`);
+				assert.ok(!agent.tools?.includes("write"), `${name} should NOT have write tool`);
+				assert.ok(!agent.tools?.includes("edit"), `${name} should NOT have edit tool`);
+			}
+
+			// web-researcher specific
+			const webResearcher = builtins.find((a) => a.name === "web-researcher" && a.source === "builtin");
+			assert.ok(webResearcher?.tools?.includes("web_search"), "web-researcher should have web_search");
+			assert.ok(webResearcher?.tools?.includes("fetch_content"), "web-researcher should have fetch_content");
+			assert.ok(webResearcher?.extensions?.includes("pi-web-access"), "web-researcher should have pi-web-access extension");
+		} finally {
+			if (previousHome === undefined) delete process.env.HOME;
+			else process.env.HOME = previousHome;
+			if (previousUserProfile === undefined) delete process.env.USERPROFILE;
+			else process.env.USERPROFILE = previousUserProfile;
+		}
+	});
+});
