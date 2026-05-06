@@ -258,11 +258,11 @@ describe("chain execution — sequential", { skip: !available ? "pi packages not
 
 	it("suppresses progress for {task} chain templates when the top-level task is review-only", async () => {
 		mockPi.onCall({ output: "Review done" });
-		const agents = [makeAgent("reviewer", { defaultProgress: true })];
+		const agents = [makeAgent("delegate", { defaultProgress: true })];
 
 		await executeChain(
 			makeChainParams(
-				[{ agent: "reviewer" }],
+				[{ agent: "delegate" }],
 				agents,
 				{ task: "Review-only. Do not edit files. Return findings." },
 			),
@@ -294,11 +294,11 @@ describe("chain execution — sequential", { skip: !available ? "pi packages not
 
 	it("substitutes {task} in templates", async () => {
 		mockPi.onCall({ output: "Done" });
-		const agents = [makeAgent("worker")];
+		const agents = [makeAgent("delegate")];
 
 		const result = await executeChain(
 			makeChainParams(
-				[{ agent: "worker", task: "Review {task} carefully" }],
+				[{ agent: "delegate", task: "Review {task} carefully" }],
 				agents,
 				{ task: "the authentication module" },
 			),
@@ -314,11 +314,11 @@ describe("chain execution — sequential", { skip: !available ? "pi packages not
 
 	it("creates and uses chain_dir", async () => {
 		mockPi.onCall({ output: "Done" });
-		const agents = [makeAgent("worker")];
+		const agents = [makeAgent("delegate")];
 
 		const result = await executeChain(
 			makeChainParams(
-				[{ agent: "worker", task: "Write to {chain_dir}" }],
+				[{ agent: "delegate", task: "Write to {chain_dir}" }],
 				agents,
 			),
 		);
@@ -347,13 +347,13 @@ describe("chain execution — sequential", { skip: !available ? "pi packages not
 
 	it("runs a 3-step chain end-to-end", async () => {
 		mockPi.onCall({ output: "Step output" });
-		const agents = [makeAgent("scout"), makeAgent("planner"), makeAgent("executor")];
+		const agents = [makeAgent("delegate"), makeAgent("delegate"), makeAgent("executor")];
 
 		const result = await executeChain(
 			makeChainParams(
 				[
-					{ agent: "scout", task: "Survey the codebase" },
-					{ agent: "planner" },
+					{ agent: "delegate", task: "Survey the codebase" },
+					{ agent: "delegate" },
 					{ agent: "executor" },
 				],
 				agents,
@@ -366,11 +366,11 @@ describe("chain execution — sequential", { skip: !available ? "pi packages not
 	});
 
 	it("returns error for unknown agent in chain", async () => {
-		const agents = [makeAgent("scout")];
+		const agents = [makeAgent("delegate")];
 
 		const result = await executeChain(
 			makeChainParams(
-				[{ agent: "scout", task: "Start" }, { agent: "nonexistent" }],
+				[{ agent: "delegate", task: "Start" }, { agent: "nonexistent" }],
 				agents,
 			),
 		);
@@ -416,12 +416,12 @@ describe("chain execution — sequential", { skip: !available ? "pi packages not
 
 	it("uses custom chainDir when provided", async () => {
 		mockPi.onCall({ output: "Done" });
-		const agents = [makeAgent("worker")];
+		const agents = [makeAgent("delegate")];
 		const customChainDir = path.join(tempDir, "my-chain");
 
 		const result = await executeChain(
 			makeChainParams(
-				[{ agent: "worker", task: "Use {chain_dir}" }],
+				[{ agent: "delegate", task: "Use {chain_dir}" }],
 				agents,
 				{ chainDir: customChainDir },
 			),
@@ -438,11 +438,11 @@ describe("chain execution — sequential", { skip: !available ? "pi packages not
 		delete process.env.PI_SUBAGENT_MAX_DEPTH;
 		try {
 			mockPi.onCall({ echoEnv: ["PI_SUBAGENT_DEPTH", "PI_SUBAGENT_MAX_DEPTH"] });
-			const agents = [makeAgent("worker", { maxSubagentDepth: 1 })];
+			const agents = [makeAgent("delegate", { maxSubagentDepth: 1 })];
 
 			const result = await executeChain(
 				makeChainParams(
-					[{ agent: "worker", task: "Inspect env" }],
+					[{ agent: "delegate", task: "Inspect env" }],
 					agents,
 					{ maxSubagentDepth: 3 },
 				),
@@ -746,12 +746,12 @@ describe("chain execution — parallel steps", { skip: !available ? "pi packages
 
 	it("sequential → parallel → sequential (mixed chain)", async () => {
 		mockPi.onCall({ output: "Step complete" });
-		const agents = [makeAgent("scout"), makeAgent("rev-a"), makeAgent("rev-b"), makeAgent("writer")];
+		const agents = [makeAgent("delegate"), makeAgent("rev-a"), makeAgent("rev-b"), makeAgent("writer")];
 
 		const result = await executeChain(
 			makeChainParams(
 				[
-					{ agent: "scout", task: "Initial scan" },
+					{ agent: "delegate", task: "Initial scan" },
 					{
 						parallel: [
 							{ agent: "rev-a", task: "Deep review A" },

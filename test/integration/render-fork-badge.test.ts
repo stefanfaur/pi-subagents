@@ -63,7 +63,7 @@ describe("renderSubagentResult fork indicator", () => {
 				mode: "single",
 				context: "fork",
 				results: [{
-					agent: "reviewer",
+					agent: "delegate",
 					task: "review",
 					exitCode: 0,
 					messages: [],
@@ -82,7 +82,7 @@ describe("renderSubagentResult fork indicator", () => {
 			details: {
 				mode: "single",
 				results: [{
-					agent: "reviewer",
+					agent: "delegate",
 					task: "review",
 					exitCode: 0,
 					messages: undefined,
@@ -106,7 +106,7 @@ describe("renderSubagentResult fork indicator", () => {
 			details: {
 				mode: "single",
 				results: [{
-					agent: "reviewer",
+					agent: "delegate",
 					task: longTask,
 					exitCode: 0,
 					messages: [],
@@ -120,7 +120,7 @@ describe("renderSubagentResult fork indicator", () => {
 			details: {
 				mode: "single",
 				results: [{
-					agent: "reviewer",
+					agent: "delegate",
 					task: longTask,
 					exitCode: 0,
 					messages: [],
@@ -140,7 +140,7 @@ describe("renderSubagentResult fork indicator", () => {
 			details: {
 				mode: "single",
 				results: [{
-					agent: "reviewer",
+					agent: "delegate",
 					task: "review",
 					exitCode: 0,
 					messages: [],
@@ -166,7 +166,7 @@ describe("renderSubagentResult fork indicator", () => {
 			details: {
 				mode: "single",
 				results: [{
-					agent: "reviewer",
+					agent: "delegate",
 					task: "review",
 					exitCode: 1,
 					error: "boom",
@@ -188,7 +188,7 @@ describe("renderSubagentResult fork indicator", () => {
 			details: {
 				mode: "single",
 				results: [{
-					agent: "reviewer",
+					agent: "delegate",
 					task: "review",
 					exitCode: 0,
 					messages: [],
@@ -198,7 +198,7 @@ describe("renderSubagentResult fork indicator", () => {
 					usage: emptyUsage,
 					progress: {
 						index: 0,
-						agent: "reviewer",
+						agent: "delegate",
 						status: "running",
 						task: "review",
 						lastActivityAt: now - 2_000,
@@ -227,9 +227,9 @@ describe("renderSubagentResult fork indicator", () => {
 			content: [{ type: "text", text: "paused" }],
 			details: {
 				mode: "chain",
-				chainAgents: ["worker"],
+				chainAgents: ["delegate"],
 				results: [{
-					agent: "worker",
+					agent: "delegate",
 					task: "pause",
 					exitCode: 0,
 					interrupted: true,
@@ -249,9 +249,9 @@ describe("renderSubagentResult fork indicator", () => {
 			content: [{ type: "text", text: "done" }],
 			details: {
 				mode: "chain",
-				chainAgents: ["worker"],
+				chainAgents: ["delegate"],
 				results: [{
-					agent: "worker",
+					agent: "delegate",
 					task: "check without output target",
 					exitCode: 0,
 					messages: [],
@@ -306,14 +306,14 @@ describe("renderSubagentResult fork indicator", () => {
 				mode: "parallel",
 				totalSteps: 3,
 				results: [{
-					agent: "worker",
+					agent: "delegate",
 					task: "third task",
 					exitCode: 0,
 					messages: [],
 					usage: emptyUsage,
 					progress: {
 						index: 2,
-						agent: "worker",
+						agent: "delegate",
 						status: "running",
 						task: "third task",
 						recentTools: [],
@@ -325,7 +325,7 @@ describe("renderSubagentResult fork indicator", () => {
 				}],
 				progress: [{
 					index: 0,
-					agent: "scout",
+					agent: "delegate",
 					status: "running",
 					task: "first",
 					recentTools: [],
@@ -351,21 +351,21 @@ describe("renderSubagentResult fork indicator", () => {
 				mode: "parallel",
 				totalSteps: 3,
 				results: [{
-					agent: "scout",
+					agent: "delegate",
 					task: "first",
 					exitCode: 0,
 					messages: [],
 					usage: emptyUsage,
-					progress: { index: 0, agent: "scout", status: "completed", task: "first", recentTools: [], recentOutput: [], toolCount: 1, tokens: 0, durationMs: 10 },
+					progress: { index: 0, agent: "delegate", status: "completed", task: "first", recentTools: [], recentOutput: [], toolCount: 1, tokens: 0, durationMs: 10 },
 				}, {
-					agent: "reviewer",
+					agent: "delegate",
 					task: "second",
 					exitCode: 0,
 					messages: [],
 					usage: emptyUsage,
-					progress: { index: 1, agent: "reviewer", status: "running", task: "second", recentTools: [], recentOutput: [], toolCount: 1, tokens: 0, durationMs: 10 },
+					progress: { index: 1, agent: "delegate", status: "running", task: "second", recentTools: [], recentOutput: [], toolCount: 1, tokens: 0, durationMs: 10 },
 				}],
-				progress: [{ index: 0, agent: "scout", status: "completed", task: "first", recentTools: [], recentOutput: [], toolCount: 1, tokens: 0, durationMs: 10 }, { index: 1, agent: "reviewer", status: "running", task: "second", recentTools: [], recentOutput: [], toolCount: 1, tokens: 0, durationMs: 10 }],
+				progress: [{ index: 0, agent: "delegate", status: "completed", task: "first", recentTools: [], recentOutput: [], toolCount: 1, tokens: 0, durationMs: 10 }, { index: 1, agent: "delegate", status: "running", task: "second", recentTools: [], recentOutput: [], toolCount: 1, tokens: 0, durationMs: 10 }],
 			},
 		}, { expanded: false }, theme);
 
@@ -380,23 +380,23 @@ describe("renderSubagentResult fork indicator", () => {
 				mode: "chain",
 				totalSteps: 3,
 				currentStepIndex: 0,
-				chainAgents: ["[scout+reviewer+worker]", "planner", "writer"],
+				chainAgents: ["[scout+reviewer+worker]", "delegate", "writer"],
 				results: [{
-					agent: "scout",
+					agent: "delegate",
 					task: "scan",
 					exitCode: 0,
 					messages: [],
 					usage: emptyUsage,
-					progress: { index: 0, agent: "scout", status: "running", task: "scan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
+					progress: { index: 0, agent: "delegate", status: "running", task: "scan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
 				}, {
-					agent: "reviewer",
+					agent: "delegate",
 					task: "review",
 					exitCode: 0,
 					messages: [],
 					usage: emptyUsage,
-					progress: { index: 1, agent: "reviewer", status: "running", task: "review", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
+					progress: { index: 1, agent: "delegate", status: "running", task: "review", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
 				}],
-				progress: [{ index: 0, agent: "scout", status: "running", task: "scan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 }, { index: 1, agent: "reviewer", status: "running", task: "review", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 }],
+				progress: [{ index: 0, agent: "delegate", status: "running", task: "scan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 }, { index: 1, agent: "delegate", status: "running", task: "review", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 }],
 			},
 		}, { expanded: false }, theme);
 
@@ -414,33 +414,33 @@ describe("renderSubagentResult fork indicator", () => {
 				mode: "chain",
 				totalSteps: 3,
 				currentStepIndex: 1,
-				chainAgents: ["planner", "[scout+reviewer]", "writer"],
+				chainAgents: ["delegate", "[scout+reviewer]", "writer"],
 				results: [{
-					agent: "planner",
+					agent: "delegate",
 					task: "plan",
 					exitCode: 0,
 					messages: [],
 					usage: emptyUsage,
-					progress: { index: 0, agent: "planner", status: "completed", task: "plan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
+					progress: { index: 0, agent: "delegate", status: "completed", task: "plan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
 				}, {
-					agent: "scout",
+					agent: "delegate",
 					task: "scan",
 					exitCode: 0,
 					messages: [],
 					usage: emptyUsage,
-					progress: { index: 1, agent: "scout", status: "running", task: "scan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
+					progress: { index: 1, agent: "delegate", status: "running", task: "scan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
 				}, {
-					agent: "reviewer",
+					agent: "delegate",
 					task: "review",
 					exitCode: 0,
 					messages: [],
 					usage: emptyUsage,
-					progress: { index: 2, agent: "reviewer", status: "running", task: "review", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
+					progress: { index: 2, agent: "delegate", status: "running", task: "review", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
 				}],
 				progress: [
-					{ index: 0, agent: "planner", status: "completed", task: "plan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
-					{ index: 1, agent: "scout", status: "running", task: "scan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
-					{ index: 2, agent: "reviewer", status: "running", task: "review", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
+					{ index: 0, agent: "delegate", status: "completed", task: "plan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
+					{ index: 1, agent: "delegate", status: "running", task: "scan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
+					{ index: 2, agent: "delegate", status: "running", task: "review", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
 				],
 			},
 		}, { expanded: false }, theme);
@@ -455,9 +455,9 @@ describe("renderSubagentResult fork indicator", () => {
 
 	it("uses logical chain progress and agent labels for completed mixed chains", () => {
 		const progress = [
-			{ index: 0, agent: "planner", status: "completed" as const, task: "plan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 1 },
-			{ index: 1, agent: "scout", status: "completed" as const, task: "scan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 1 },
-			{ index: 2, agent: "reviewer", status: "completed" as const, task: "review", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 1 },
+			{ index: 0, agent: "delegate", status: "completed" as const, task: "plan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 1 },
+			{ index: 1, agent: "delegate", status: "completed" as const, task: "scan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 1 },
+			{ index: 2, agent: "delegate", status: "completed" as const, task: "review", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 1 },
 			{ index: 3, agent: "writer", status: "completed" as const, task: "write", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 1 },
 		];
 		const widget = renderSubagentResult!({
@@ -465,7 +465,7 @@ describe("renderSubagentResult fork indicator", () => {
 			details: {
 				mode: "chain",
 				totalSteps: 3,
-				chainAgents: ["planner", "[scout+reviewer]", "writer"],
+				chainAgents: ["delegate", "[scout+reviewer]", "writer"],
 				results: progress.map((entry) => ({
 					agent: entry.agent,
 					task: entry.task,
@@ -494,14 +494,14 @@ describe("renderSubagentResult fork indicator", () => {
 				mode: "chain",
 				totalSteps: 3,
 				currentStepIndex: 0,
-				chainAgents: ["scout", "reviewer", "worker"],
+				chainAgents: ["delegate", "delegate", "delegate"],
 				results: [{
-					agent: "scout",
+					agent: "delegate",
 					task: "scan",
 					exitCode: 0,
 					messages: [],
 					usage: emptyUsage,
-					progress: { index: 0, agent: "scout", status: "running", task: "scan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
+					progress: { index: 0, agent: "delegate", status: "running", task: "scan", recentTools: [], recentOutput: [], toolCount: 0, tokens: 0, durationMs: 0 },
 				}],
 			},
 		}, { expanded: false }, theme);

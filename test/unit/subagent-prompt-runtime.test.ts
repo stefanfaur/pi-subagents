@@ -129,13 +129,13 @@ describe("subagent prompt runtime", () => {
 			role: "assistant",
 			content: [
 				{ type: "text", text: "I will inspect the repo." },
-				{ type: "toolCall", name: "subagent", input: { agent: "worker" } },
+				{ type: "toolCall", name: "subagent", input: { agent: "delegate" } },
 				{ type: "toolCall", name: "read", input: { path: "README.md" } },
 			],
 		};
 		const pureSubagentCall = {
 			role: "assistant",
-			content: [{ type: "toolCall", name: "subagent", input: { agent: "reviewer" } }],
+			content: [{ type: "toolCall", name: "subagent", input: { agent: "delegate" } }],
 		};
 
 		assert.deepEqual(
@@ -157,7 +157,7 @@ describe("subagent prompt runtime", () => {
 	it("sets the child intercom session name from env during agent startup", async () => {
 		let sessionName: string | undefined;
 		let beforeAgentStart: ((event: { systemPrompt: string }) => Promise<{ systemPrompt: string } | undefined>) | undefined;
-		process.env[SUBAGENT_INTERCOM_SESSION_NAME_ENV] = "subagent-worker-78f659a3";
+		process.env[SUBAGENT_INTERCOM_SESSION_NAME_ENV] = "subagent-delegate-78f659a3";
 
 		registerSubagentPromptRuntime({
 			on(event: string, handler: (payload: { systemPrompt: string }) => Promise<{ systemPrompt: string } | undefined>) {
@@ -170,7 +170,7 @@ describe("subagent prompt runtime", () => {
 
 		await beforeAgentStart?.({ systemPrompt: BASE_PROMPT });
 
-		assert.equal(sessionName, "subagent-worker-78f659a3");
+		assert.equal(sessionName, "subagent-delegate-78f659a3");
 	});
 
 	it("rewrites the final child-visible prompt through before_agent_start", async () => {
@@ -205,7 +205,7 @@ describe("subagent prompt runtime", () => {
 		const instruction = { role: "custom", customType: "subagent-orchestration-instructions", content: "Subagent orchestration is enabled." };
 		const slashResult = { role: "custom", customType: "subagent-slash-result", content: "## Orchestration" };
 		const subagentResult = { role: "toolResult", toolName: "subagent", content: "subagent results" };
-		const subagentCall = { role: "assistant", content: [{ type: "toolCall", name: "subagent", input: { agent: "worker" } }] };
+		const subagentCall = { role: "assistant", content: [{ type: "toolCall", name: "subagent", input: { agent: "delegate" } }] };
 		const otherCustom = { role: "custom", customType: "other", content: "keep" };
 
 		assert.deepEqual(contextHandler?.({ messages: [priorParentTurn, instruction, slashResult, subagentCall, subagentResult, otherCustom, currentTask] }), {

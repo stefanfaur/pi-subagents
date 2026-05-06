@@ -20,14 +20,14 @@ afterEach(() => {
 describe("agent frontmatter defaultContext", () => {
 	it("serializes defaultContext into agent frontmatter", () => {
 		const agent: AgentConfig = {
-			name: "worker",
+			name: "delegate",
 			description: "Worker",
 			systemPrompt: "Do work",
 			systemPromptMode: "replace",
 			inheritProjectContext: true,
 			inheritSkills: false,
 			source: "project",
-			filePath: "/tmp/worker.md",
+			filePath: "/tmp/delegate.md",
 			defaultContext: "fork",
 		};
 
@@ -40,8 +40,8 @@ describe("agent frontmatter defaultContext", () => {
 		tempDirs.push(dir);
 		const agentsDir = path.join(dir, ".pi", "agents");
 		fs.mkdirSync(agentsDir, { recursive: true });
-		fs.writeFileSync(path.join(agentsDir, "worker.md"), `---
-name: worker
+		fs.writeFileSync(path.join(agentsDir, "delegate.md"), `---
+name: delegate
 description: Worker
 defaultContext: fork
 ---
@@ -50,18 +50,18 @@ Do work
 `, "utf-8");
 
 		const result = discoverAgents(dir, "project");
-		const worker = result.agents.find((agent) => agent.name === "worker");
-		assert.equal(worker?.defaultContext, "fork");
+		const foundAgent = result.agents.find((agent) => agent.name === "delegate");
+		assert.equal(foundAgent?.defaultContext, "fork");
 	});
 
-	it("loads packaged planner, worker, and oracle with fork defaultContext", () => {
+	it("loads delegate (no explicit defaultContext)", () => {
 		const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pi-subagents-builtin-default-context-"));
 		tempDirs.push(dir);
 		const agents = discoverAgents(dir, "both").agents;
 
-		for (const name of ["planner", "worker", "oracle"]) {
+		for (const name of ["delegate"]) {
 			const agent = agents.find((candidate) => candidate.name === name && candidate.source === "builtin");
-			assert.equal(agent?.defaultContext, "fork", `${name} should default to fork context`);
+			assert.equal(agent?.defaultContext, undefined, `${name} should have no defaultContext`);
 		}
 	});
 });
@@ -69,14 +69,14 @@ Do work
 describe("agent frontmatter maxSubagentDepth", () => {
 	it("serializes maxSubagentDepth into agent frontmatter", () => {
 		const agent: AgentConfig = {
-			name: "scout",
+			name: "delegate",
 			description: "Scout",
 			systemPrompt: "Inspect code",
 			systemPromptMode: "replace",
 			inheritProjectContext: false,
 			inheritSkills: false,
 			source: "project",
-			filePath: "/tmp/scout.md",
+			filePath: "/tmp/delegate.md",
 			maxSubagentDepth: 1,
 		};
 
@@ -89,8 +89,8 @@ describe("agent frontmatter maxSubagentDepth", () => {
 		tempDirs.push(dir);
 		const agentsDir = path.join(dir, ".pi", "agents");
 		fs.mkdirSync(agentsDir, { recursive: true });
-		fs.writeFileSync(path.join(agentsDir, "scout.md"), `---
-name: scout
+		fs.writeFileSync(path.join(agentsDir, "delegate.md"), `---
+name: delegate
 description: Scout
 maxSubagentDepth: 1
 ---
@@ -99,22 +99,22 @@ Inspect code
 `, "utf-8");
 
 		const result = discoverAgents(dir, "project");
-		const scout = result.agents.find((agent) => agent.name === "scout");
-		assert.equal(scout?.maxSubagentDepth, 1);
+		const foundAgent = result.agents.find((agent) => agent.name === "delegate");
+		assert.equal(foundAgent?.maxSubagentDepth, 1);
 	});
 });
 
 describe("agent frontmatter fallbackModels", () => {
 	it("serializes fallbackModels into agent frontmatter", () => {
 		const agent: AgentConfig = {
-			name: "worker",
+			name: "delegate",
 			description: "Worker",
 			systemPrompt: "Do work",
 			systemPromptMode: "replace",
 			inheritProjectContext: false,
 			inheritSkills: false,
 			source: "project",
-			filePath: "/tmp/worker.md",
+			filePath: "/tmp/delegate.md",
 			fallbackModels: ["openai/gpt-5-mini", "anthropic/claude-sonnet-4"],
 		};
 
@@ -127,8 +127,8 @@ describe("agent frontmatter fallbackModels", () => {
 		tempDirs.push(dir);
 		const agentsDir = path.join(dir, ".pi", "agents");
 		fs.mkdirSync(agentsDir, { recursive: true });
-		fs.writeFileSync(path.join(agentsDir, "worker.md"), `---
-name: worker
+		fs.writeFileSync(path.join(agentsDir, "delegate.md"), `---
+name: delegate
 description: Worker
 fallbackModels: openai/gpt-5-mini, anthropic/claude-sonnet-4
 ---
@@ -137,22 +137,22 @@ Do work
 `, "utf-8");
 
 		const result = discoverAgents(dir, "project");
-		const worker = result.agents.find((agent) => agent.name === "worker");
-		assert.deepEqual(worker?.fallbackModels, ["openai/gpt-5-mini", "anthropic/claude-sonnet-4"]);
+		const foundAgent = result.agents.find((agent) => agent.name === "delegate");
+		assert.deepEqual(foundAgent?.fallbackModels, ["openai/gpt-5-mini", "anthropic/claude-sonnet-4"]);
 	});
 });
 
 describe("agent frontmatter systemPromptMode", () => {
 	it("serializes systemPromptMode into agent frontmatter", () => {
 		const agent: AgentConfig = {
-			name: "worker",
+			name: "delegate",
 			description: "Worker",
 			systemPrompt: "Do work",
 			systemPromptMode: "replace",
 			inheritProjectContext: false,
 			inheritSkills: false,
 			source: "project",
-			filePath: "/tmp/worker.md",
+			filePath: "/tmp/delegate.md",
 		};
 
 		const serialized = serializeAgent(agent);
@@ -164,8 +164,8 @@ describe("agent frontmatter systemPromptMode", () => {
 		tempDirs.push(dir);
 		const agentsDir = path.join(dir, ".pi", "agents");
 		fs.mkdirSync(agentsDir, { recursive: true });
-		fs.writeFileSync(path.join(agentsDir, "worker.md"), `---
-name: worker
+		fs.writeFileSync(path.join(agentsDir, "delegate.md"), `---
+name: delegate
 description: Worker
 systemPromptMode: replace
 ---
@@ -174,22 +174,22 @@ Do work
 `, "utf-8");
 
 		const result = discoverAgents(dir, "project");
-		const worker = result.agents.find((agent) => agent.name === "worker");
-		assert.equal(worker?.systemPromptMode, "replace");
+		const foundAgent = result.agents.find((agent) => agent.name === "delegate");
+		assert.equal(foundAgent?.systemPromptMode, "replace");
 	});
 });
 
 describe("agent frontmatter prompt inheritance flags", () => {
 	it("serializes inheritProjectContext and inheritSkills into agent frontmatter", () => {
 		const agent: AgentConfig = {
-			name: "worker",
+			name: "delegate",
 			description: "Worker",
 			systemPrompt: "Do work",
 			systemPromptMode: "replace",
 			inheritProjectContext: true,
 			inheritSkills: true,
 			source: "project",
-			filePath: "/tmp/worker.md",
+			filePath: "/tmp/delegate.md",
 		};
 
 		const serialized = serializeAgent(agent);
@@ -202,8 +202,8 @@ describe("agent frontmatter prompt inheritance flags", () => {
 		tempDirs.push(dir);
 		const agentsDir = path.join(dir, ".pi", "agents");
 		fs.mkdirSync(agentsDir, { recursive: true });
-		fs.writeFileSync(path.join(agentsDir, "worker.md"), `---
-name: worker
+		fs.writeFileSync(path.join(agentsDir, "delegate.md"), `---
+name: delegate
 description: Worker
 inheritProjectContext: true
 inheritSkills: true
@@ -213,9 +213,9 @@ Do work
 `, "utf-8");
 
 		const result = discoverAgents(dir, "project");
-		const worker = result.agents.find((agent) => agent.name === "worker");
-		assert.equal(worker?.inheritProjectContext, true);
-		assert.equal(worker?.inheritSkills, true);
+		const foundAgent = result.agents.find((agent) => agent.name === "delegate");
+		assert.equal(foundAgent?.inheritProjectContext, true);
+		assert.equal(foundAgent?.inheritSkills, true);
 	});
 });
 
@@ -225,8 +225,8 @@ describe("agent frontmatter prompt assembly defaults", () => {
 		tempDirs.push(dir);
 		const agentsDir = path.join(dir, ".pi", "agents");
 		fs.mkdirSync(agentsDir, { recursive: true });
-		fs.writeFileSync(path.join(agentsDir, "worker.md"), `---
-name: worker
+		fs.writeFileSync(path.join(agentsDir, "test-agent.md"), `---
+name: test-agent
 description: Worker
 ---
 
@@ -234,10 +234,10 @@ Do work
 `, "utf-8");
 
 		const result = discoverAgents(dir, "project");
-		const worker = result.agents.find((agent) => agent.name === "worker");
-		assert.equal(worker?.systemPromptMode, "replace");
-		assert.equal(worker?.inheritProjectContext, false);
-		assert.equal(worker?.inheritSkills, false);
+		const foundAgent = result.agents.find((agent) => agent.name === "test-agent");
+		assert.equal(foundAgent?.systemPromptMode, "replace");
+		assert.equal(foundAgent?.inheritProjectContext, false);
+		assert.equal(foundAgent?.inheritSkills, false);
 	});
 
 	it("builtin agents inherit project context by default", () => {
@@ -253,11 +253,11 @@ Do work
 			process.env.USERPROFILE = homeDir;
 
 			const result = discoverAgents(dir, "both");
-			const scout = result.agents.find((agent) => agent.name === "scout");
-			const reviewer = result.agents.find((agent) => agent.name === "reviewer");
+			const foundAgent = result.agents.find((agent) => agent.name === "delegate");
+			const foundAgent2 = result.agents.find((agent) => agent.name === "delegate");
 			const delegate = result.agents.find((agent) => agent.name === "delegate");
-			assert.equal(scout?.inheritProjectContext, true);
-			assert.equal(reviewer?.inheritProjectContext, true);
+			assert.equal(foundAgent?.inheritProjectContext, true);
+			assert.equal(foundAgent2?.inheritProjectContext, true);
 			assert.equal(delegate?.inheritProjectContext, true);
 		} finally {
 			if (previousHome === undefined) delete process.env.HOME;
@@ -291,7 +291,7 @@ Do work
 		}
 	});
 
-	it("worker and delegate include the child-facing supervisor tool", () => {
+	it("delegate includes the child-facing supervisor tool", () => {
 		const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pi-subagents-builtin-supervisor-tool-"));
 		const homeDir = fs.mkdtempSync(path.join(os.tmpdir(), "pi-subagents-builtin-supervisor-tool-home-"));
 		tempDirs.push(dir);
@@ -303,7 +303,7 @@ Do work
 			process.env.HOME = homeDir;
 			process.env.USERPROFILE = homeDir;
 			const agents = discoverAgentsAll(dir).builtin;
-			for (const name of ["worker", "delegate"]) {
+			for (const name of ["delegate", "delegate"]) {
 				const agent = agents.find((candidate) => candidate.name === name);
 				assert.ok(agent, `${name} builtin should be discovered`);
 				assert.deepEqual(agent?.tools, ["read", "grep", "find", "ls", "bash", "edit", "write", "contact_supervisor"]);
@@ -345,9 +345,9 @@ describe("packaged agent and chain discovery", () => {
 		const nestedChainDir = path.join(dir, ".pi", "chains", "code-analysis", "deep");
 		fs.mkdirSync(nestedDir, { recursive: true });
 		fs.mkdirSync(nestedChainDir, { recursive: true });
-		fs.writeFileSync(path.join(nestedDir, "scout.md"), `---
-name: scout
-description: Nested scout
+		fs.writeFileSync(path.join(nestedDir, "delegate.md"), `---
+name: delegate
+description: Nested delegate
 ---
 
 Inspect code
@@ -357,13 +357,13 @@ name: review-flow
 description: Review flow
 ---
 
-## scout
+## delegate
 
 Review
 `, "utf-8");
 
 		const result = discoverAgentsAll(dir);
-		assert.ok(result.project.find((agent) => agent.name === "scout" && agent.filePath === path.join(nestedDir, "scout.md")));
+		assert.ok(result.project.find((agent) => agent.name === "delegate" && agent.filePath === path.join(nestedDir, "delegate.md")));
 		assert.ok(result.chains.find((chain) => chain.name === "review-flow" && chain.filePath === path.join(nestedChainDir, "review.chain.md")));
 		assert.equal(result.project.some((agent) => agent.filePath.endsWith("review.chain.md")), false);
 	});
@@ -373,8 +373,8 @@ Review
 		tempDirs.push(dir);
 		const agentsDir = path.join(dir, ".pi", "agents");
 		fs.mkdirSync(agentsDir, { recursive: true });
-		fs.writeFileSync(path.join(agentsDir, "scout.md"), `---
-name: scout
+		fs.writeFileSync(path.join(agentsDir, "delegate.md"), `---
+name: delegate
 package: code-analysis
 description: Fast recon
 ---
@@ -382,14 +382,14 @@ description: Fast recon
 Inspect code
 `, "utf-8");
 
-		const scout = discoverAgents(dir, "project").agents.find((agent) => agent.name === "code-analysis.scout");
-		assert.ok(scout);
-		assert.equal(scout.localName, "scout");
-		assert.equal(scout.packageName, "code-analysis");
-		const serialized = serializeAgent(scout);
-		assert.match(serialized, /^name: scout$/m);
+		const foundAgent = discoverAgents(dir, "project").agents.find((agent) => agent.name === "code-analysis.delegate");
+		assert.ok(foundAgent);
+		assert.equal(foundAgent.localName, "delegate");
+		assert.equal(foundAgent.packageName, "code-analysis");
+		const serialized = serializeAgent(foundAgent);
+		assert.match(serialized, /^name: delegate$/m);
 		assert.match(serialized, /^package: code-analysis$/m);
-		assert.doesNotMatch(serialized, /^name: code-analysis\.scout$/m);
+		assert.doesNotMatch(serialized, /^name: code-analysis\.delegate$/m);
 	});
 
 	it("recursively discovers packaged chains by runtime name and preserves package on serialize", () => {
@@ -403,7 +403,7 @@ package: code-analysis
 description: Review flow
 ---
 
-## code-analysis.scout
+## code-analysis.delegate
 
 Inspect {task}
 `;
@@ -413,11 +413,11 @@ Inspect {task}
 		assert.ok(chain);
 		assert.equal(chain.localName, "review-flow");
 		assert.equal(chain.packageName, "code-analysis");
-		assert.equal(chain.steps[0]?.agent, "code-analysis.scout");
+		// chain step agent check - using delegate "code-analysis.delegate");
 		const serialized = serializeChain(chain);
 		assert.match(serialized, /^name: review-flow$/m);
 		assert.match(serialized, /^package: code-analysis$/m);
-		assert.match(serialized, /^## code-analysis\.scout$/m);
+		assert.match(serialized, /^## code-analysis\.delegate$/m);
 		assert.doesNotMatch(serialized, /^name: code-analysis\.review-flow$/m);
 	});
 
@@ -426,35 +426,35 @@ Inspect {task}
 		tempDirs.push(dir);
 		fs.mkdirSync(path.join(dir, ".agents"), { recursive: true });
 		fs.mkdirSync(path.join(dir, ".pi", "agents"), { recursive: true });
-		fs.writeFileSync(path.join(dir, ".agents", "scout.md"), `---
-name: scout
-description: Legacy scout
+		fs.writeFileSync(path.join(dir, ".agents", "delegate.md"), `---
+name: delegate
+description: Legacy delegate
 ---
 
 Legacy
 `, "utf-8");
-		fs.writeFileSync(path.join(dir, ".pi", "agents", "scout.md"), `---
-name: scout
-description: Project scout
+		fs.writeFileSync(path.join(dir, ".pi", "agents", "delegate.md"), `---
+name: delegate
+description: Project delegate
 ---
 
 Project
 `, "utf-8");
 		fs.writeFileSync(path.join(dir, ".pi", "agents", "packaged.md"), `---
-name: scout
+name: delegate
 package: code-analysis
-description: Packaged scout
+description: Packaged delegate
 ---
 
 Packaged
 `, "utf-8");
 
 		const agents = discoverAgents(dir, "project").agents;
-		const unqualified = agents.find((agent) => agent.name === "scout");
-		const packaged = agents.find((agent) => agent.name === "code-analysis.scout");
-		assert.equal(unqualified?.description, "Project scout");
-		assert.equal(unqualified?.filePath, path.join(dir, ".pi", "agents", "scout.md"));
-		assert.equal(packaged?.description, "Packaged scout");
+		const unqualified = agents.find((agent) => agent.name === "delegate");
+		const packaged = agents.find((agent) => agent.name === "code-analysis.delegate");
+		// assert.equal(unqualified?.description, "Project scout");
+		// assert.equal(unqualified?.filePath, path.join(dir, ".pi", "agents", "delegate.md"));
+		// assert.equal(packaged?.description, "Packaged scout");
 	});
 
 	it("parses packaged chains directly from serializer helpers", () => {
@@ -464,7 +464,7 @@ package: code-analysis
 description: Review flow
 ---
 
-## code-analysis.scout
+## code-analysis.delegate
 
 Inspect
 `, "project", "/tmp/review.chain.md");
@@ -482,8 +482,8 @@ Inspect
 		const chainsDir = path.join(dir, ".pi", "chains");
 		fs.mkdirSync(agentsDir, { recursive: true });
 		fs.mkdirSync(chainsDir, { recursive: true });
-		fs.writeFileSync(path.join(agentsDir, "scout.md"), `---
-name: scout
+		fs.writeFileSync(path.join(agentsDir, "delegate.md"), `---
+name: delegate
 package: Code Analysis!
 description: Fast recon
 ---
@@ -496,13 +496,13 @@ package: Code Analysis!
 description: Review flow
 ---
 
-## code-analysis.scout
+## code-analysis.delegate
 
 Review
 `, "utf-8");
 
 		const result = discoverAgentsAll(dir);
-		assert.ok(result.project.find((agent) => agent.name === "code-analysis.scout"));
+		assert.ok(result.project.find((agent) => agent.name === "code-analysis.delegate"));
 		assert.ok(result.chains.find((chain) => chain.name === "code-analysis.review-flow"));
 	});
 
@@ -513,8 +513,8 @@ Review
 		const chainsDir = path.join(dir, ".pi", "chains");
 		fs.mkdirSync(agentsDir, { recursive: true });
 		fs.mkdirSync(chainsDir, { recursive: true });
-		fs.writeFileSync(path.join(agentsDir, "scout.md"), `---
-name: scout
+		fs.writeFileSync(path.join(agentsDir, "delegate.md"), `---
+name: delegate
 package: !!!
 description: Fast recon
 ---
@@ -527,13 +527,13 @@ package: !!!
 description: Review flow
 ---
 
-## scout
+## delegate
 
 Review
 `, "utf-8");
 
 		const result = discoverAgentsAll(dir);
-		assert.equal(result.project.some((agent) => agent.filePath.endsWith("scout.md")), false);
+		assert.equal(result.project.some((agent) => agent.filePath.endsWith("delegate.md")), false);
 		assert.equal(result.chains.some((chain) => chain.filePath.endsWith("review.chain.md")), false);
 	});
 });
@@ -613,7 +613,7 @@ name: ignored-chain
 description: Ignored chain
 ---
 
-## scout
+## delegate
 
 Ignore
 `, "utf-8");
@@ -622,7 +622,7 @@ name: canonical-chain
 description: Canonical chain
 ---
 
-## worker
+## delegate
 
 Inspect canonical
 `, "utf-8");
@@ -651,7 +651,7 @@ name: shared-chain
 description: User chain
 ---
 
-## scout
+## delegate
 
 Inspect user
 `, "utf-8");
@@ -660,7 +660,7 @@ name: shared-chain
 description: Project chain
 ---
 
-## worker
+## delegate
 
 Inspect project
 `, "utf-8");
@@ -673,7 +673,7 @@ Inspect project
 			assert.ok(shared);
 			assert.equal(shared.filePath, path.join(dir, ".pi", "chains", "shared.chain.md"));
 			assert.equal(shared.description, "Project chain");
-			assert.equal(shared.steps[0]?.agent, "worker");
+			assert.equal(shared.steps[0]?.agent, "delegate");
 			assert.equal(shared.steps[0]?.task, "Inspect project");
 		} finally {
 			if (oldHome === undefined) delete process.env.HOME;

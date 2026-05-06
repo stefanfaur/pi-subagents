@@ -101,7 +101,7 @@ describe("buildPiArgs system prompt mode wiring", () => {
 			baseArgs: ["-p"],
 			task: "hello",
 			sessionEnabled: false,
-			systemPrompt: "You are a worker",
+			systemPrompt: "You are a delegate",
 			inheritProjectContext: false,
 			inheritSkills: false,
 		});
@@ -115,7 +115,7 @@ describe("buildPiArgs system prompt mode wiring", () => {
 			baseArgs: ["-p"],
 			task: "hello",
 			sessionEnabled: false,
-			systemPrompt: "You are a worker",
+			systemPrompt: "You are a delegate",
 			systemPromptMode: "replace",
 			inheritProjectContext: false,
 			inheritSkills: false,
@@ -148,17 +148,17 @@ describe("buildPiArgs system prompt mode wiring", () => {
 			sessionEnabled: false,
 			inheritProjectContext: true,
 			inheritSkills: true,
-			intercomSessionName: "subagent-worker-78f659a3",
+			intercomSessionName: "subagent-delegate-78f659a3",
 			orchestratorIntercomTarget: "subagent-chat-parent",
 			runId: "78f659a3",
-			childAgentName: "worker",
+			childAgentName: "delegate",
 			childIndex: 2,
 		});
 
-		assert.equal(env.PI_SUBAGENT_INTERCOM_SESSION_NAME, "subagent-worker-78f659a3");
+		assert.equal(env.PI_SUBAGENT_INTERCOM_SESSION_NAME, "subagent-delegate-78f659a3");
 		assert.equal(env.PI_SUBAGENT_ORCHESTRATOR_TARGET, "subagent-chat-parent");
 		assert.equal(env.PI_SUBAGENT_RUN_ID, "78f659a3");
-		assert.equal(env.PI_SUBAGENT_CHILD_AGENT, "worker");
+		assert.equal(env.PI_SUBAGENT_CHILD_AGENT, "delegate");
 		assert.equal(env.PI_SUBAGENT_CHILD_INDEX, "2");
 	});
 

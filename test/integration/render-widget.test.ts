@@ -61,21 +61,21 @@ function createUiContext() {
 describe("subagent async widget rendering", () => {
 	it("orders running jobs before queued summaries and completions", () => {
 		const lines = buildWidgetLines([
-			{ asyncId: "done-1", asyncDir: "/tmp/done", status: "complete", agents: ["reviewer"], startedAt: 0, updatedAt: 1000 },
-			{ asyncId: "queued-1", asyncDir: "/tmp/queued", status: "queued", agents: ["planner"], startedAt: 0, updatedAt: 1000 },
-			{ asyncId: "run-1", asyncDir: "/tmp/run", status: "running", agents: ["scout"], currentStep: 0, stepsTotal: 2, startedAt: Date.now() - 1000, updatedAt: Date.now(), currentTool: "read", currentToolStartedAt: Date.now() - 500 },
+			{ asyncId: "done-1", asyncDir: "/tmp/done", status: "complete", agents: ["delegate"], startedAt: 0, updatedAt: 1000 },
+			{ asyncId: "queued-1", asyncDir: "/tmp/queued", status: "queued", agents: ["delegate"], startedAt: 0, updatedAt: 1000 },
+			{ asyncId: "run-1", asyncDir: "/tmp/run", status: "running", agents: ["delegate"], currentStep: 0, stepsTotal: 2, startedAt: Date.now() - 1000, updatedAt: Date.now(), currentTool: "read", currentToolStartedAt: Date.now() - 500 },
 		], theme, 120);
 
 		const text = lines.join("\n");
 		assert.match(text, /^● Async agents · background/);
-		assert.ok(text.indexOf("scout") < text.indexOf("queued"), "running row should precede queued summary");
-		assert.ok(text.indexOf("queued") < text.indexOf("reviewer"), "queued summary should precede completions");
+		assert.ok(text.indexOf("delegate") < text.indexOf("queued"), "running row should precede queued summary");
+		assert.ok(text.indexOf("queued") < text.indexOf("delegate"), "queued summary should precede completions");
 		assert.match(text, /⎿  read/);
 	});
 
 	it("uses parallel running/done wording for async jobs with parallel groups", () => {
 		const lines = buildWidgetLines([
-			{ asyncId: "run-1", asyncDir: "/tmp/1", status: "running", mode: "parallel", agents: ["scout", "reviewer", "worker"], hasParallelGroups: true, activeParallelGroup: true, runningSteps: 3, completedSteps: 0, stepsTotal: 3 },
+			{ asyncId: "run-1", asyncDir: "/tmp/1", status: "running", mode: "parallel", agents: ["delegate", "delegate", "delegate"], hasParallelGroups: true, activeParallelGroup: true, runningSteps: 3, completedSteps: 0, stepsTotal: 3 },
 		], theme, 120);
 
 		const text = lines.join("\n");
@@ -87,7 +87,7 @@ describe("subagent async widget rendering", () => {
 
 	it("collapses repeated async parallel agent names", () => {
 		const lines = buildWidgetLines([
-			{ asyncId: "run-1", asyncDir: "/tmp/1", status: "running", mode: "parallel", agents: ["reviewer", "reviewer", "reviewer"], activeParallelGroup: true, runningSteps: 3, completedSteps: 0, stepsTotal: 3 },
+			{ asyncId: "run-1", asyncDir: "/tmp/1", status: "running", mode: "parallel", agents: ["delegate", "delegate", "delegate"], activeParallelGroup: true, runningSteps: 3, completedSteps: 0, stepsTotal: 3 },
 		], theme, 120);
 
 		const text = lines.join("\n");
@@ -105,15 +105,15 @@ describe("subagent async widget rendering", () => {
 				asyncDir: "/tmp/1",
 				status: "running",
 				mode: "parallel",
-				agents: ["reviewer", "reviewer", "reviewer"],
+				agents: ["delegate", "delegate", "delegate"],
 				activeParallelGroup: true,
 				runningSteps: 3,
 				completedSteps: 0,
 				stepsTotal: 3,
 				steps: [
-					{ index: 0, agent: "reviewer", status: "running", lastActivityAt: now, turnCount: 5, toolCount: 18, tokens: { input: 30_000, output: 10_000, cache: 4_000, total: 44_000 } },
-					{ index: 1, agent: "reviewer", status: "running", lastActivityAt: now - 2000, turnCount: 4, toolCount: 13, tokens: { input: 16_000, output: 4_000, cache: 2_000, total: 22_000 } },
-					{ index: 2, agent: "reviewer", status: "running", currentTool: "grep", currentToolStartedAt: now - 1000, turnCount: 3, toolCount: 11, tokens: { input: 14_000, output: 3_000, cache: 2_000, total: 19_000 } },
+					{ index: 0, agent: "delegate", status: "running", lastActivityAt: now, turnCount: 5, toolCount: 18, tokens: { input: 30_000, output: 10_000, cache: 4_000, total: 44_000 } },
+					{ index: 1, agent: "delegate", status: "running", lastActivityAt: now - 2000, turnCount: 4, toolCount: 13, tokens: { input: 16_000, output: 4_000, cache: 2_000, total: 22_000 } },
+					{ index: 2, agent: "delegate", status: "running", currentTool: "grep", currentToolStartedAt: now - 1000, turnCount: 3, toolCount: 11, tokens: { input: 14_000, output: 3_000, cache: 2_000, total: 19_000 } },
 				],
 			}]);
 			const widget = ui.widgets.at(-1);
@@ -140,15 +140,15 @@ describe("subagent async widget rendering", () => {
 				asyncDir: "/tmp/1",
 				status: "running",
 				mode: "parallel",
-				agents: ["reviewer", "reviewer", "reviewer"],
+				agents: ["delegate", "delegate", "delegate"],
 				activeParallelGroup: true,
 				runningSteps: 2,
 				completedSteps: 1,
 				stepsTotal: 3,
 				steps: [
-					{ agent: "reviewer", status: "running", lastActivityAt: now, toolCount: 2 },
-					{ agent: "reviewer", status: "running", currentTool: "read", currentToolStartedAt: now - 2000 },
-					{ agent: "reviewer", status: "complete", tokens: { input: 1000, output: 500, cache: 0, total: 1500 } },
+					{ agent: "delegate", status: "running", lastActivityAt: now, toolCount: 2 },
+					{ agent: "delegate", status: "running", currentTool: "read", currentToolStartedAt: now - 2000 },
+					{ agent: "delegate", status: "complete", tokens: { input: 1000, output: 500, cache: 0, total: 1500 } },
 				],
 			},
 		], theme, 160);
@@ -170,7 +170,7 @@ describe("subagent async widget rendering", () => {
 			asyncDir: "/tmp/1",
 			status: "running",
 			mode: "parallel",
-			agents: ["reviewer"],
+			agents: ["delegate"],
 			activeParallelGroup: true,
 			runningSteps: 1,
 			completedSteps: 0,
@@ -178,7 +178,7 @@ describe("subagent async widget rendering", () => {
 			steps: [
 				{
 					index: 0,
-					agent: "reviewer",
+					agent: "delegate",
 					status: "running",
 					currentTool: "read",
 					currentToolArgs: "src/tui/render.ts",
@@ -209,7 +209,7 @@ describe("subagent async widget rendering", () => {
 				asyncDir: "/tmp/chain",
 				status: "running",
 				mode: "chain",
-				agents: ["reviewer", "auditor"],
+				agents: ["delegate", "auditor"],
 				activeParallelGroup: true,
 				currentStep: 1,
 				chainStepCount: 3,
@@ -231,15 +231,15 @@ describe("subagent async widget rendering", () => {
 				asyncDir: "/tmp/chain",
 				status: "running",
 				mode: "chain",
-				agents: ["scout", "reviewer", "auditor", "writer"],
+				agents: ["delegate", "delegate", "auditor", "writer"],
 				activeParallelGroup: false,
 				currentStep: 3,
 				chainStepCount: 2,
 				parallelGroups: [{ start: 0, count: 3, stepIndex: 0 }],
 				stepsTotal: 4,
 				steps: [
-					{ index: 0, agent: "scout", status: "complete" },
-					{ index: 1, agent: "reviewer", status: "complete" },
+					{ index: 0, agent: "delegate", status: "complete" },
+					{ index: 1, agent: "delegate", status: "complete" },
 					{ index: 2, agent: "auditor", status: "complete" },
 					{ index: 3, agent: "writer", status: "running", toolCount: 1 },
 				],
@@ -264,7 +264,7 @@ describe("subagent async widget rendering", () => {
 				asyncDir: "/tmp/parallel-pending",
 				status: "running",
 				mode: "parallel",
-				agents: ["scout", "reviewer", "worker"],
+				agents: ["delegate", "delegate", "delegate"],
 				activeParallelGroup: true,
 				runningSteps: 0,
 				completedSteps: 0,
@@ -275,7 +275,7 @@ describe("subagent async widget rendering", () => {
 				asyncDir: "/tmp/chain-pending",
 				status: "running",
 				mode: "chain",
-				agents: ["reviewer", "auditor"],
+				agents: ["delegate", "auditor"],
 				activeParallelGroup: true,
 				currentStep: 0,
 				chainStepCount: 2,
@@ -310,7 +310,7 @@ describe("subagent async widget rendering", () => {
 			{ asyncId: "run-2", asyncDir: "/tmp/2", status: "running", agents: ["a2"] },
 			{ asyncId: "run-3", asyncDir: "/tmp/3", status: "running", agents: ["a3"] },
 			{ asyncId: "run-4", asyncDir: "/tmp/4", status: "running", agents: ["a4"] },
-			{ asyncId: "queued-1", asyncDir: "/tmp/q", status: "queued", agents: ["planner"] },
+			{ asyncId: "queued-1", asyncDir: "/tmp/q", status: "queued", agents: ["delegate"] },
 		], theme, 120);
 
 		assert.match(lines.join("\n"), /\+1 more \(1 queued\)/);
@@ -319,7 +319,7 @@ describe("subagent async widget rendering", () => {
 	it("does not animate queued-only widgets", async () => {
 		const ui = createUiContext();
 		try {
-			renderWidget(ui.ctx as never, [{ asyncId: "queued-only", asyncDir: "/tmp/queued", status: "queued", agents: ["planner"] }]);
+			renderWidget(ui.ctx as never, [{ asyncId: "queued-only", asyncDir: "/tmp/queued", status: "queued", agents: ["delegate"] }]);
 			const initialWidgetCount = ui.widgets.length;
 			await new Promise((resolve) => setTimeout(resolve, 190));
 			assert.equal(ui.widgets.length, initialWidgetCount, "static queued widget should not refresh at animation cadence");
@@ -342,7 +342,7 @@ describe("subagent async widget rendering", () => {
 				content: [{ type: "text", text: "running" }],
 				details: {
 					mode: "parallel",
-					results: [{ agent: "scout", task: "scan", exitCode: 0, progress: { status: "running" } }],
+					results: [{ agent: "delegate", task: "scan", exitCode: 0, progress: { status: "running" } }],
 				},
 			}, context);
 			await new Promise((resolve) => setTimeout(resolve, 190));
@@ -355,7 +355,7 @@ describe("subagent async widget rendering", () => {
 				content: [{ type: "text", text: "running again" }],
 				details: {
 					mode: "parallel",
-					results: [{ agent: "scout", task: "scan", exitCode: 0, progress: { status: "running" } }],
+					results: [{ agent: "delegate", task: "scan", exitCode: 0, progress: { status: "running" } }],
 				},
 			}, context);
 			assert.ok(context.state.subagentResultAnimationTimer, "running result should restart after global cleanup");
@@ -364,7 +364,7 @@ describe("subagent async widget rendering", () => {
 				content: [{ type: "text", text: "done" }],
 				details: {
 					mode: "parallel",
-					results: [{ agent: "scout", task: "scan", exitCode: 0, progress: { status: "completed" } }],
+					results: [{ agent: "delegate", task: "scan", exitCode: 0, progress: { status: "completed" } }],
 				},
 			}, context);
 			const afterComplete = invalidations;
@@ -391,7 +391,7 @@ describe("subagent async widget rendering", () => {
 					content: [{ type: "text", text: "running" }],
 					details: {
 						mode: "parallel",
-						results: [{ agent: "scout", task: "scan", exitCode: 0, progress: { status: "running" } }],
+						results: [{ agent: "delegate", task: "scan", exitCode: 0, progress: { status: "running" } }],
 					},
 				}, context);
 				await new Promise((resolve) => setTimeout(resolve, 190));
@@ -408,7 +408,7 @@ describe("subagent async widget rendering", () => {
 	it("animates while active and stops after the widget is cleared", async () => {
 		const ui = createUiContext();
 		try {
-			renderWidget(ui.ctx as never, [{ asyncId: "run-anim", asyncDir: "/tmp/run", status: "running", agents: ["scout"] }]);
+			renderWidget(ui.ctx as never, [{ asyncId: "run-anim", asyncDir: "/tmp/run", status: "running", agents: ["delegate"] }]);
 			const initialWidgetCount = ui.widgets.length;
 			await new Promise((resolve) => setTimeout(resolve, 190));
 			assert.ok(ui.widgets.length > initialWidgetCount, "animation should refresh widget lines");
@@ -448,7 +448,7 @@ describe("subagent async widget rendering", () => {
 		};
 		try {
 			await expectNoUncaught(async () => {
-				renderWidget(ctx as never, [{ asyncId: "run-anim", asyncDir: "/tmp/run", status: "running", agents: ["scout"] }]);
+				renderWidget(ctx as never, [{ asyncId: "run-anim", asyncDir: "/tmp/run", status: "running", agents: ["delegate"] }]);
 				await new Promise((resolve) => setTimeout(resolve, 190));
 			});
 			assert.equal(hasUiReads, 2, "widget refresh should stop immediately after stale hasUI throw");

@@ -42,7 +42,7 @@ describe("async stale-run reconciliation", () => {
 				startedAt: 1000,
 				lastUpdate: 1000,
 				currentStep: 0,
-				steps: [{ agent: "scout", status: "running", startedAt: 1000 }],
+				steps: [{ agent: "delegate", status: "running", startedAt: 1000 }],
 			});
 
 			const result = reconcileAsyncRun(asyncDir, {
@@ -85,19 +85,19 @@ describe("async stale-run reconciliation", () => {
 				startedAt: 1000,
 				lastUpdate: 1000,
 				steps: [
-					{ agent: "scout", status: "running", startedAt: 1000 },
-					{ agent: "worker", status: "running", startedAt: 1100 },
+					{ agent: "delegate", status: "running", startedAt: 1000 },
+					{ agent: "delegate", status: "running", startedAt: 1100 },
 				],
 			});
-			const scoutSession = path.join(root, "scout.jsonl");
-			const workerSession = path.join(root, "worker.jsonl");
+			const delegateSession1 = path.join(root, "delegate.jsonl");
+			const delegateSession2 = path.join(root, "delegate.jsonl");
 			fs.writeFileSync(path.join(resultsDir, "run-mixed.json"), JSON.stringify({
 				id: "run-mixed",
 				success: false,
 				state: "failed",
 				results: [
-					{ agent: "scout", success: true, sessionFile: scoutSession, model: "fast" },
-					{ agent: "worker", success: false, error: "boom", sessionFile: workerSession, model: "careful" },
+					{ agent: "delegate", success: true, sessionFile: delegateSession1, model: "fast" },
+					{ agent: "delegate", success: false, error: "boom", sessionFile: delegateSession2, model: "careful" },
 				],
 			}, null, 2), "utf-8");
 
@@ -112,12 +112,12 @@ describe("async stale-run reconciliation", () => {
 			assert.equal(result.status?.steps?.[0]?.status, "complete");
 			assert.equal(result.status?.steps?.[0]?.exitCode, 0);
 			assert.equal(result.status?.steps?.[0]?.model, "fast");
-			assert.equal(result.status?.steps?.[0]?.sessionFile, scoutSession);
+			assert.equal(result.status?.steps?.[0]?.sessionFile, delegateSession1);
 			assert.equal(result.status?.steps?.[1]?.status, "failed");
 			assert.equal(result.status?.steps?.[1]?.exitCode, 1);
 			assert.equal(result.status?.steps?.[1]?.error, "boom");
 			assert.equal(result.status?.steps?.[1]?.model, "careful");
-			assert.equal(result.status?.steps?.[1]?.sessionFile, workerSession);
+			assert.equal(result.status?.steps?.[1]?.sessionFile, delegateSession2);
 		} finally {
 			fs.rmSync(root, { recursive: true, force: true });
 		}
@@ -135,7 +135,7 @@ describe("async stale-run reconciliation", () => {
 				pid: 12345,
 				startedAt: 1000,
 				lastUpdate: 1000,
-				steps: [{ agent: "worker", status: "running", startedAt: 1000 }],
+				steps: [{ agent: "delegate", status: "running", startedAt: 1000 }],
 			});
 
 			const result = reconcileAsyncRun(asyncDir, {
@@ -166,7 +166,7 @@ describe("async stale-run reconciliation", () => {
 				pid: 12345,
 				startedAt: 1000,
 				lastUpdate: 1000,
-				steps: [{ agent: "worker", status: "running", startedAt: 1000 }],
+				steps: [{ agent: "delegate", status: "running", startedAt: 1000 }],
 			});
 			const resultPath = path.join(resultsDir, "run-result.json");
 			fs.writeFileSync(resultPath, JSON.stringify({ id: "run-result", success: true, state: "complete", summary: "already done" }, null, 2), "utf-8");

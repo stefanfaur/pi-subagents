@@ -25,7 +25,7 @@ function assistantText(text: string): Message {
 
 test("implementation task with no mutation triggers the completion guard", () => {
 	const result = evaluateCompletionMutationGuard({
-		agent: "worker",
+		agent: "delegate",
 		task: "Implement the approved fix",
 		messages: [assistantText("Plan: update the files...")],
 	});
@@ -38,24 +38,24 @@ test("implementation task with no mutation triggers the completion guard", () =>
 });
 
 test("review-only, research, and framework output instructions do not expect mutation", () => {
-	assert.equal(expectsImplementationMutation("worker", "Review only: return findings, do not edit"), false);
-	assert.equal(expectsImplementationMutation("worker", "Do not edit files. Tell me how to fix the bug."), false);
-	assert.equal(expectsImplementationMutation("worker", "Review the diff and suggest fixes only. Do not edit files."), false);
-	assert.equal(expectsImplementationMutation("worker", "Implement this. Do not edit files outside this repo. Do not edit files."), false);
-	assert.equal(expectsImplementationMutation("worker", "Investigate why this failed"), false);
+	assert.equal(expectsImplementationMutation("reviewer", "Review only: return findings, do not edit"), false);
+	assert.equal(expectsImplementationMutation("reviewer", "Do not edit files. Tell me how to fix the bug."), false);
+	assert.equal(expectsImplementationMutation("reviewer", "Review the diff and suggest fixes only. Do not edit files."), false);
+	assert.equal(expectsImplementationMutation("reviewer", "Implement this. Do not edit files outside this repo. Do not edit files."), false);
+	assert.equal(expectsImplementationMutation("scout", "Investigate why this failed"), false);
 	assert.equal(expectsImplementationMutation("researcher", "Research the API behavior"), false);
-	assert.equal(expectsImplementationMutation("researcher", "Research this and patch the bug"), false);
+	assert.equal(expectsImplementationMutation("reviewer", "Research this and patch the bug"), false);
 	assert.equal(expectsImplementationMutation("reviewer", "Review this and fix any real issues"), false);
 	assert.equal(expectsImplementationMutation("reviewer", "Review this and fix any real issues; regardless of findings, apply changes directly"), true);
-	assert.equal(expectsImplementationMutation("worker", "[Write to: /tmp/result.md]\n\nSummarize findings"), false);
-	assert.equal(expectsImplementationMutation("worker", "Write report"), false);
-	assert.equal(expectsImplementationMutation("worker", "Create a report"), false);
-	assert.equal(expectsImplementationMutation("worker", "Create a summary"), false);
-	assert.equal(expectsImplementationMutation("worker", "Add a report"), false);
-	assert.equal(expectsImplementationMutation("worker", "Update a summary"), false);
-	assert.equal(expectsImplementationMutation("worker", "Write to {chain_dir}"), false);
+	assert.equal(expectsImplementationMutation("delegate", "[Write to: /tmp/result.md]\n\nSummarize findings"), false);
+	assert.equal(expectsImplementationMutation("delegate", "Write report"), false);
+	assert.equal(expectsImplementationMutation("delegate", "Create a report"), false);
+	assert.equal(expectsImplementationMutation("delegate", "Create a summary"), false);
+	assert.equal(expectsImplementationMutation("delegate", "Add a report"), false);
+	assert.equal(expectsImplementationMutation("delegate", "Update a summary"), false);
+	assert.equal(expectsImplementationMutation("delegate", "Write to {chain_dir}"), false);
 	assert.equal(
-		expectsImplementationMutation("worker", "Do async work\nUpdate progress at: /tmp/progress.md\nWrite your findings to: /tmp/out.md"),
+		expectsImplementationMutation("delegate", "Do async work\nUpdate progress at: /tmp/progress.md\nWrite your findings to: /tmp/out.md"),
 		false,
 	);
 });
@@ -98,7 +98,7 @@ test("obvious mutating bash commands count as mutation attempts", () => {
 
 test("implementation task with mutation attempts does not trigger", () => {
 	const result = evaluateCompletionMutationGuard({
-		agent: "worker",
+		agent: "delegate",
 		task: "Fix the failing test",
 		messages: [assistantToolCall("edit", { path: "test.ts" })],
 	});

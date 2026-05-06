@@ -44,7 +44,7 @@ describe("chain clarify model display", { skip: !available ? "pi packages not av
 			{ requestRender() {} },
 			{ fg(_key: string, text: string) { return text; } },
 			[{
-				name: "worker",
+				name: "delegate",
 				description: "",
 				systemPrompt: "",
 				systemPromptMode: "replace",
@@ -79,7 +79,7 @@ describe("chain clarify model display", { skip: !available ? "pi packages not av
 			{ requestRender() {} },
 			{ fg(_key: string, text: string) { return text; } },
 			[{
-				name: "worker",
+				name: "delegate",
 				description: "",
 				systemPrompt: "",
 				systemPromptMode: "replace",
@@ -123,7 +123,7 @@ describe("chain clarify model display", { skip: !available ? "pi packages not av
 			{ requestRender() {} },
 			{ fg(_key: string, text: string) { return text; } },
 			[{
-				name: "worker",
+				name: "delegate",
 				description: "",
 				systemPrompt: "",
 				systemPromptMode: "replace",
@@ -162,7 +162,7 @@ describe("chain clarify model display", { skip: !available ? "pi packages not av
 			{ requestRender() {} },
 			{ fg(_key: string, text: string) { return text; } },
 			[{
-				name: "worker",
+				name: "delegate",
 				description: "",
 				systemPrompt: "",
 				systemPromptMode: "replace",
@@ -200,7 +200,7 @@ describe("chain clarify model display", { skip: !available ? "pi packages not av
 			{ requestRender() {} },
 			{ fg(_key: string, text: string) { return text; } },
 			[{
-				name: "worker",
+				name: "delegate",
 				description: "",
 				systemPrompt: "",
 				systemPromptMode: "replace",
@@ -233,7 +233,7 @@ describe("chain clarify model display", { skip: !available ? "pi packages not av
 			{ requestRender() {} },
 			{ fg(_key: string, text: string) { return text; } },
 			[{
-				name: "worker",
+				name: "delegate",
 				description: "",
 				systemPrompt: "",
 				systemPromptMode: "replace",

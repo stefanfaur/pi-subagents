@@ -199,9 +199,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		mockPi.onCall({ output: "single done" });
 		const singleId = `async-handoff-single-${Date.now().toString(36)}`;
 		const singleResult = executeAsyncSingle(singleId, {
-			agent: "worker",
+			agent: "delegate",
 			task: "Do work",
-			agentConfig: makeAgent("worker"),
+			agentConfig: makeAgent("delegate"),
 			...commonParams,
 		});
 		assert.match(singleResult.content[0]?.text ?? "", /Async: worker \[/);
@@ -213,9 +213,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		mockPi.onCall({ output: "parallel two done" });
 		const parallelId = `async-handoff-parallel-${Date.now().toString(36)}`;
 		const parallelResult = executeAsyncChain(parallelId, {
-			chain: [{ parallel: [{ agent: "worker", task: "Do one" }, { agent: "reviewer", task: "Do two" }] }],
+			chain: [{ parallel: [{ agent: "delegate", task: "Do one" }, { agent: "delegate", task: "Do two" }] }],
 			resultMode: "parallel",
-			agents: [makeAgent("worker"), makeAgent("reviewer")],
+			agents: [makeAgent("delegate"), makeAgent("delegate")],
 			...commonParams,
 		});
 		assert.match(parallelResult.content[0]?.text ?? "", /Async parallel:/);
@@ -229,8 +229,8 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		mockPi.onCall({ output: "chain done" });
 		const chainId = `async-handoff-chain-${Date.now().toString(36)}`;
 		const chainResult = executeAsyncChain(chainId, {
-			chain: [{ agent: "worker", task: "Do chained work" }],
-			agents: [makeAgent("worker")],
+			chain: [{ agent: "delegate", task: "Do chained work" }],
+			agents: [makeAgent("delegate")],
 			...commonParams,
 		});
 		assert.match(chainResult.content[0]?.text ?? "", /Async chain:/);
@@ -248,13 +248,13 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 			tempArtifactsDir: tempDir,
 			getSubagentSessionRoot: () => tempDir,
 			expandTilde: (p: string) => p,
-			discoverAgents: () => ({ agents: [makeAgent("worker")] }),
+			discoverAgents: () => ({ agents: [makeAgent("delegate")] }),
 		});
 
 		const result = await executor.execute(
 			"async-parallel-fields",
 			{
-				tasks: [{ agent: "worker", task: "Do async work", output: "async-top-output.md", reads: ["input.md"], progress: true }],
+				tasks: [{ agent: "delegate", task: "Do async work", output: "async-top-output.md", reads: ["input.md"], progress: true }],
 				async: true,
 				clarify: false,
 			},
@@ -307,13 +307,13 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 			tempArtifactsDir: tempDir,
 			getSubagentSessionRoot: () => tempDir,
 			expandTilde: (p: string) => p,
-			discoverAgents: () => ({ agents: [makeAgent("reviewer", { defaultProgress: true })] }),
+			discoverAgents: () => ({ agents: [makeAgent("delegate", { defaultProgress: true })] }),
 		});
 
 		const result = await executor.execute(
 			"async-chain-read-only-progress",
 			{
-				chain: [{ agent: "reviewer" }],
+				chain: [{ agent: "delegate" }],
 				task: "Review-only. Do not edit files. Return findings.",
 				async: true,
 				clarify: false,
@@ -350,13 +350,13 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 				tempArtifactsDir: repoDir,
 				getSubagentSessionRoot: () => repoDir,
 				expandTilde: (p: string) => p,
-				discoverAgents: () => ({ agents: [makeAgent("worker")] }),
+				discoverAgents: () => ({ agents: [makeAgent("delegate")] }),
 			});
 
 			const result = await executor.execute(
 				"async-parallel-worktree-fields",
 				{
-					tasks: [{ agent: "worker", task: "Do worktree work", output: "report.md", reads: ["input.md"] }],
+					tasks: [{ agent: "delegate", task: "Do worktree work", output: "report.md", reads: ["input.md"] }],
 					async: true,
 					clarify: false,
 					worktree: true,
@@ -445,9 +445,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		const asyncDir = path.join(ASYNC_DIR, id);
 		const resultPath = path.join(RESULTS_DIR, `${id}.json`);
 		const run = executeAsyncSingle(id, {
-			agent: "worker",
+			agent: "delegate",
 			task: "Do work",
-			agentConfig: makeAgent("worker", {
+			agentConfig: makeAgent("delegate", {
 				model: "openai/gpt-5-mini",
 				fallbackModels: ["anthropic/claude-sonnet-4"],
 			}),
@@ -508,9 +508,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		const id = `async-zero-exit-provider-error-${Date.now().toString(36)}`;
 		const asyncDir = path.join(ASYNC_DIR, id);
 		executeAsyncSingle(id, {
-			agent: "worker",
+			agent: "delegate",
 			task: "Do work",
-			agentConfig: makeAgent("worker", { model: "openai/gpt-5-mini" }),
+			agentConfig: makeAgent("delegate", { model: "openai/gpt-5-mini" }),
 			ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 			artifactConfig: {
 				enabled: false,
@@ -539,9 +539,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		const resultPath = path.join(RESULTS_DIR, `${id}.json`);
 		const outputPath = path.join(tempDir, "async-file-only.md");
 		const run = executeAsyncSingle(id, {
-			agent: "worker",
+			agent: "delegate",
 			task: "Do work",
-			agentConfig: makeAgent("worker"),
+			agentConfig: makeAgent("delegate"),
 			ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 			artifactConfig: {
 				enabled: false,
@@ -585,9 +585,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		const sessionRoot = path.join(tempDir, "sessions");
 
 		executeAsyncSingle(id, {
-			agent: "worker",
+			agent: "delegate",
 			task: "Deploy app",
-			agentConfig: makeAgent("worker"),
+			agentConfig: makeAgent("delegate"),
 			ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 			artifactConfig: {
 				enabled: false,
@@ -624,9 +624,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		const sessionRoot = path.join(tempDir, "sessions");
 
 		executeAsyncSingle(id, {
-			agent: "worker",
+			agent: "delegate",
 			task: "Implement the approved fixes",
-			agentConfig: makeAgent("worker"),
+			agentConfig: makeAgent("delegate"),
 			ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 			artifactConfig: {
 				enabled: false,
@@ -672,9 +672,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		const sessionRoot = path.join(tempDir, "sessions");
 
 		executeAsyncSingle(id, {
-			agent: "worker",
+			agent: "delegate",
 			task: "Do work",
-			agentConfig: makeAgent("worker", { model: "gpt-5-mini" }),
+			agentConfig: makeAgent("delegate", { model: "gpt-5-mini" }),
 			ctx: {
 				pi: { events: { emit() {} } },
 				cwd: tempDir,
@@ -723,9 +723,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		try {
 			writePackageSkill(taskCwd, "async-task-cwd-skill");
 			executeAsyncSingle(id, {
-				agent: "worker",
+				agent: "delegate",
 				task: "Do work",
-				agentConfig: makeAgent("worker", { skills: ["async-task-cwd-skill"] }),
+				agentConfig: makeAgent("delegate", { skills: ["async-task-cwd-skill"] }),
 				ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 				cwd: taskCwd,
 				artifactConfig: {
@@ -761,9 +761,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 	it("background single runs report unavailable pi-subagents skill requests", () => {
 		const id = `async-pi-subagents-skill-${Date.now().toString(36)}`;
 		const result = executeAsyncSingle(id, {
-			agent: "worker",
+			agent: "delegate",
 			task: "Do work",
-			agentConfig: makeAgent("worker"),
+			agentConfig: makeAgent("delegate"),
 			ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 			cwd: tempDir,
 			artifactConfig: {
@@ -787,8 +787,8 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 	it("background chains report unavailable pi-subagents skill requests", () => {
 		const id = `async-chain-pi-subagents-skill-${Date.now().toString(36)}`;
 		const result = executeAsyncChain(id, {
-			chain: [{ agent: "worker", task: "Do work", skill: ["pi-subagents"] }],
-			agents: [makeAgent("worker")],
+			chain: [{ agent: "delegate", task: "Do work", skill: ["pi-subagents"] }],
+			agents: [makeAgent("delegate")],
 			ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 			cwd: tempDir,
 			artifactConfig: {
@@ -819,8 +819,8 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		try {
 			writePackageSkill(path.join(chainCwd, "packages", "app"), "async-chain-step-skill");
 			executeAsyncChain(id, {
-				chain: [{ agent: "worker", task: "Do work", cwd: "packages/app", skill: ["async-chain-step-skill"] }],
-				agents: [makeAgent("worker")],
+				chain: [{ agent: "delegate", task: "Do work", cwd: "packages/app", skill: ["async-chain-step-skill"] }],
+				agents: [makeAgent("delegate")],
 				ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 				cwd: chainCwd,
 				artifactConfig: {
@@ -918,9 +918,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		fs.mkdirSync(path.join(TEMP_ROOT_DIR, `async-cfg-${id}.json`), { recursive: true });
 
 		const result = executeAsyncSingle(id, {
-			agent: "worker",
+			agent: "delegate",
 			task: "Do work",
-			agentConfig: makeAgent("worker"),
+			agentConfig: makeAgent("delegate"),
 			ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 			artifactConfig: {
 				enabled: false,
@@ -945,9 +945,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		const missingCwd = path.join(tempDir, "missing-cwd");
 
 		const singleResult = executeAsyncSingle(id, {
-			agent: "worker",
+			agent: "delegate",
 			task: "Do work",
-			agentConfig: makeAgent("worker"),
+			agentConfig: makeAgent("delegate"),
 			ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 			cwd: missingCwd,
 			artifactConfig: {
@@ -969,8 +969,8 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 
 		const chainId = `async-missing-cwd-chain-${Date.now().toString(36)}`;
 		const chainResult = executeAsyncChain(chainId, {
-			chain: [{ agent: "worker", task: "Do work" }],
-			agents: [makeAgent("worker")],
+			chain: [{ agent: "delegate", task: "Do work" }],
+			agents: [makeAgent("delegate")],
 			ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 			cwd: missingCwd,
 			artifactConfig: {
@@ -997,9 +997,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		try {
 			const id = `async-spawn-fail-${Date.now().toString(36)}`;
 			const result = executeAsyncSingle(id, {
-				agent: "worker",
+				agent: "delegate",
 				task: "Do work",
-				agentConfig: makeAgent("worker"),
+				agentConfig: makeAgent("delegate"),
 				ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 				artifactConfig: {
 					enabled: false,
@@ -1029,8 +1029,8 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		fs.mkdirSync(path.join(TEMP_ROOT_DIR, `async-cfg-${id}.json`), { recursive: true });
 
 		const result = executeAsyncChain(id, {
-			chain: [{ agent: "worker", task: "Do work" }],
-			agents: [makeAgent("worker")],
+			chain: [{ agent: "delegate", task: "Do work" }],
+			agents: [makeAgent("delegate")],
 			ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 			artifactConfig: {
 				enabled: false,
@@ -1063,9 +1063,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 
 		const start = Date.now();
 		executeAsyncSingle(id, {
-			agent: "worker",
+			agent: "delegate",
 			task: "Do work",
-			agentConfig: makeAgent("worker"),
+			agentConfig: makeAgent("delegate"),
 			ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 			artifactConfig: {
 				enabled: false,
@@ -1108,9 +1108,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 
 		const start = Date.now();
 		executeAsyncSingle(id, {
-			agent: "scout",
+			agent: "delegate",
 			task: "Inspect something",
-			agentConfig: makeAgent("scout"),
+			agentConfig: makeAgent("delegate"),
 			ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 			artifactConfig: { enabled: false, includeInput: false, includeOutput: false, includeJsonl: false, includeMetadata: false, cleanupDays: 7 },
 			shareEnabled: false,
@@ -1153,9 +1153,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		const resultPath = path.join(RESULTS_DIR, `${id}.json`);
 
 		executeAsyncSingle(id, {
-			agent: "worker",
+			agent: "delegate",
 			task: "Do work",
-			agentConfig: makeAgent("worker"),
+			agentConfig: makeAgent("delegate"),
 			ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 			artifactConfig: { enabled: false, includeInput: false, includeOutput: false, includeJsonl: false, includeMetadata: false, cleanupDays: 7 },
 			shareEnabled: false,
@@ -1190,9 +1190,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		const resultPath = path.join(RESULTS_DIR, `${id}.json`);
 
 		executeAsyncSingle(id, {
-			agent: "scout",
+			agent: "delegate",
 			task: "Investigate behavior",
-			agentConfig: makeAgent("scout"),
+			agentConfig: makeAgent("delegate"),
 			ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 			artifactConfig: { enabled: false, includeInput: false, includeOutput: false, includeJsonl: false, includeMetadata: false, cleanupDays: 7 },
 			shareEnabled: false,
@@ -1249,9 +1249,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		const resultPath = path.join(RESULTS_DIR, `${id}.json`);
 
 		executeAsyncSingle(id, {
-			agent: "worker",
+			agent: "delegate",
 			task: "Implement the approved fixes",
-			agentConfig: makeAgent("worker"),
+			agentConfig: makeAgent("delegate"),
 			ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 			artifactConfig: { enabled: false, includeInput: false, includeOutput: false, includeJsonl: false, includeMetadata: false, cleanupDays: 7 },
 			shareEnabled: false,
@@ -1310,9 +1310,9 @@ describe("async execution utilities", { skip: !available ? "pi packages not avai
 		const sessionRoot = path.join(tempDir, "sessions");
 
 		executeAsyncSingle(id, {
-			agent: "worker",
+			agent: "delegate",
 			task: "Stream detailed progress",
-			agentConfig: makeAgent("worker"),
+			agentConfig: makeAgent("delegate"),
 			ctx: { pi: { events: { emit() {} } }, cwd: tempDir, currentSessionId: "session-1" },
 			artifactConfig: {
 				enabled: false,

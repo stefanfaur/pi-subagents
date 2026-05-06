@@ -75,7 +75,7 @@ describe("resolveChainTemplates", { skip: !available ? "pi packages not availabl
 
 	it("mixed sequential + parallel", () => {
 		const chain = [
-			{ agent: "scout", task: "Scan" },
+			{ agent: "delegate", task: "Scan" },
 			{
 				parallel: [
 					{ agent: "rev-a", task: "Deep review A" },
@@ -183,8 +183,8 @@ describe("resolveStepBehavior", { skip: !available ? "pi packages not available"
 describe("resolveParallelBehaviors", { skip: !available ? "pi packages not available" : undefined }, () => {
 	it("string false agent default disables output in chain parallel tasks", () => {
 		const behaviors = resolveParallelBehaviors(
-			[{ agent: "reviewer", task: "Review" }],
-			[{ name: "reviewer", output: "false" }],
+			[{ agent: "delegate", task: "Review" }],
+			[{ name: "delegate", output: "false" }],
 			0,
 		);
 

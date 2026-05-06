@@ -302,14 +302,14 @@ describe("fork context execution wiring", { skip: !available ? "subagent executo
 		const { manager, openedPaths, branchedLeafIds } = makeForkingSessionManagerRecorder({ sessionFile: parentSessionFile, leafId: "leaf-current" });
 		const executor = makeExecutorWithDiscoverAgents(() => ({
 			agents: [
-				{ name: "worker", description: "Worker", defaultContext: "fork" },
+				{ name: "delegate", description: "Worker", defaultContext: "fork" },
 			],
 			projectAgentsDir: null,
 		}));
 
 		const result = await executor.execute(
 			"id",
-			{ agent: "worker", task: "test" },
+			{ agent: "delegate", task: "test" },
 			new AbortController().signal,
 			undefined,
 			makeCtx(manager),
@@ -327,7 +327,7 @@ describe("fork context execution wiring", { skip: !available ? "subagent executo
 		const { manager } = makeForkingSessionManagerRecorder({ sessionFile: parentSessionFile, leafId: "leaf-current" });
 		const executor = makeExecutorWithDiscoverAgents(() => ({
 			agents: [
-				{ name: "worker", description: "Worker", defaultContext: "fork" },
+				{ name: "delegate", description: "Worker", defaultContext: "fork" },
 			],
 			projectAgentsDir: null,
 		}));
@@ -339,7 +339,7 @@ describe("fork context execution wiring", { skip: !available ? "subagent executo
 
 		const result = await executor.execute(
 			"id",
-			{ agent: "worker" },
+			{ agent: "delegate" },
 			new AbortController().signal,
 			undefined,
 			ctx,
@@ -355,14 +355,14 @@ describe("fork context execution wiring", { skip: !available ? "subagent executo
 		const { manager, openedPaths, branchedLeafIds } = makeForkingSessionManagerRecorder({ sessionFile: parentSessionFile, leafId: "leaf-current" });
 		const executor = makeExecutorWithDiscoverAgents(() => ({
 			agents: [
-				{ name: "oracle", description: "Oracle", defaultContext: "fork" },
+				{ name: "delegate", description: "Oracle", defaultContext: "fork" },
 			],
 			projectAgentsDir: null,
 		}));
 
 		const result = await executor.execute(
 			"id",
-			{ agent: "oracle", task: "test", context: "fresh" },
+			{ agent: "delegate", task: "test", context: "fresh" },
 			new AbortController().signal,
 			undefined,
 			makeCtx(manager),
@@ -380,7 +380,7 @@ describe("fork context execution wiring", { skip: !available ? "subagent executo
 		const { manager } = makeForkingSessionManagerRecorder({ sessionFile: parentSessionFile, leafId: "leaf-current" });
 		const executor = makeExecutorWithDiscoverAgents(() => ({
 			agents: [
-				{ name: "worker", description: "Worker", defaultContext: "fork" },
+				{ name: "delegate", description: "Worker", defaultContext: "fork" },
 				{ name: "second", description: "Second" },
 			],
 			projectAgentsDir: null,
@@ -388,7 +388,7 @@ describe("fork context execution wiring", { skip: !available ? "subagent executo
 
 		const result = await executor.execute(
 			"id",
-			{ tasks: [{ agent: "worker", task: "one" }, { agent: "second", task: "two" }] },
+			{ tasks: [{ agent: "delegate", task: "one" }, { agent: "second", task: "two" }] },
 			new AbortController().signal,
 			undefined,
 			makeCtx(manager),
@@ -404,7 +404,7 @@ describe("fork context execution wiring", { skip: !available ? "subagent executo
 		const { manager, openedPaths } = makeForkingSessionManagerRecorder({ sessionFile: parentSessionFile, leafId: "leaf-current" });
 		const executor = makeExecutorWithDiscoverAgents(() => ({
 			agents: [
-				{ name: "worker", description: "Worker", defaultContext: "fork" },
+				{ name: "delegate", description: "Worker", defaultContext: "fork" },
 				{ name: "second", description: "Second" },
 			],
 			projectAgentsDir: null,
@@ -412,7 +412,7 @@ describe("fork context execution wiring", { skip: !available ? "subagent executo
 
 		const result = await executor.execute(
 			"id",
-			{ tasks: [{ agent: "worker", task: "one" }, { agent: "second", task: "two" }], context: "fresh" },
+			{ tasks: [{ agent: "delegate", task: "one" }, { agent: "second", task: "two" }], context: "fresh" },
 			new AbortController().signal,
 			undefined,
 			makeCtx(manager),
@@ -429,14 +429,14 @@ describe("fork context execution wiring", { skip: !available ? "subagent executo
 		const executor = makeExecutorWithDiscoverAgents(() => ({
 			agents: [
 				{ name: "echo", description: "Echo" },
-				{ name: "worker", description: "Worker", defaultContext: "fork" },
+				{ name: "delegate", description: "Worker", defaultContext: "fork" },
 			],
 			projectAgentsDir: null,
 		}));
 
 		const result = await executor.execute(
 			"id",
-			{ chain: [{ agent: "echo", task: "scan" }, { agent: "worker", task: "write" }], clarify: false },
+			{ chain: [{ agent: "echo", task: "scan" }, { agent: "delegate", task: "write" }], clarify: false },
 			new AbortController().signal,
 			undefined,
 			makeCtx(manager),
@@ -450,13 +450,13 @@ describe("fork context execution wiring", { skip: !available ? "subagent executo
 	it("reports unknown top-level parallel agents before default-fork preconditions", async () => {
 		const { manager } = makeSessionManagerRecorder({ sessionFile: undefined, leafId: "leaf-current" });
 		const executor = makeExecutorWithDiscoverAgents(() => ({
-			agents: [{ name: "worker", description: "Worker", defaultContext: "fork" }],
+			agents: [{ name: "delegate", description: "Worker", defaultContext: "fork" }],
 			projectAgentsDir: null,
 		}));
 
 		const result = await executor.execute(
 			"id",
-			{ tasks: [{ agent: "worker", task: "one" }, { agent: "missing", task: "two" }] },
+			{ tasks: [{ agent: "delegate", task: "one" }, { agent: "missing", task: "two" }] },
 			new AbortController().signal,
 			undefined,
 			makeCtx(manager),
@@ -950,14 +950,14 @@ describe("fork context execution wiring", { skip: !available ? "subagent executo
 		process.env.USERPROFILE = tempHome;
 		const worktreeDir = path.join(tempDir, "worktree");
 		fs.mkdirSync(worktreeDir, { recursive: true });
-		writeProjectOverride(tempDir, "reviewer", "openai/gpt-5-main");
-		writeProjectOverride(worktreeDir, "reviewer", "openai/gpt-5-worktree");
+		writeProjectOverride(tempDir, "delegate", "openai/gpt-5-main");
+		writeProjectOverride(worktreeDir, "delegate", "openai/gpt-5-worktree");
 		const executor = makeExecutor();
 
 		try {
 			const result = await executor.execute(
 				"id",
-				{ action: "get", agent: "reviewer", cwd: "worktree" },
+				{ action: "get", agent: "delegate", cwd: "worktree" },
 				new AbortController().signal,
 				undefined,
 				makeCtx(makeSessionManagerRecorder().manager),

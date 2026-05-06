@@ -25,7 +25,7 @@ describe("result intercom formatter", () => {
 					summary: "Completed checks",
 					artifactPath: "/tmp/a.md",
 					sessionPath: "/tmp/a-session.jsonl",
-					intercomTarget: "subagent-reviewer-a-run-123-1",
+					intercomTarget: "subagent-delegate-a-run-123-1",
 				},
 				{
 					agent: "reviewer-b",
@@ -47,7 +47,7 @@ describe("result intercom formatter", () => {
 		assert.match(payload.message, /Chain steps: 4/);
 		assert.match(payload.message, /Intercom targets below identify child sessions used while they were running/);
 		assert.match(payload.message, /1\. reviewer-a — completed/);
-		assert.match(payload.message, /Run intercom target: subagent-reviewer-a-run-123-1/);
+		assert.match(payload.message, /Run intercom target: subagent-delegate-a-run-123-1/);
 		assert.match(payload.message, /2\. reviewer-b — failed/);
 		assert.match(payload.message, /Output artifact: \/tmp\/a\.md/);
 		assert.match(payload.message, /Session: \/tmp\/a-session\.jsonl/);
@@ -64,7 +64,7 @@ describe("result intercom formatter", () => {
 				mode: "single",
 				source: "async",
 				asyncId: "run-single",
-				children: [{ agent: "worker", status: "completed", summary: "done", sessionPath }],
+				children: [{ agent: "delegate", status: "completed", summary: "done", sessionPath }],
 			});
 
 			assert.match(payload.message, /Revive: subagent\(\{ action: "resume", id: "run-single", message: "\.\.\." \}\)/);
@@ -107,7 +107,7 @@ describe("result intercom formatter", () => {
 			mode: "single",
 			source: "async",
 			asyncId: "run-missing-session",
-			children: [{ agent: "worker", status: "failed", summary: "failed", sessionPath: path.join(os.tmpdir(), "missing-pi-session.jsonl") }],
+			children: [{ agent: "delegate", status: "failed", summary: "failed", sessionPath: path.join(os.tmpdir(), "missing-pi-session.jsonl") }],
 		});
 
 		assert.match(payload.message, /Resume: unavailable; no child session file was persisted/);
@@ -121,7 +121,7 @@ describe("result intercom formatter", () => {
 			runId: "run-bound",
 			mode: "single",
 			source: "foreground",
-			children: [{ agent: "worker", status: "completed", summary: longSummary }],
+			children: [{ agent: "delegate", status: "completed", summary: longSummary }],
 		});
 		assert.equal(payload.children[0]!.summary, longSummary);
 		assert.match(payload.message, new RegExp(`${"x".repeat(2000)}\\n${"y".repeat(2000)}`));
@@ -156,7 +156,7 @@ describe("result intercom formatter", () => {
 		const stripped = stripDetailsOutputsForIntercomReceipt({
 			mode: "single",
 			results: [{
-				agent: "worker",
+				agent: "delegate",
 				task: "Task",
 				exitCode: 0,
 				messages: [{ role: "assistant", content: [{ type: "text", text: "full" }] } as never],

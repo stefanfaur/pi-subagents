@@ -16,7 +16,7 @@ describe("registered subagent tool description", () => {
 	it("does not advertise hardcoded builtin agent names", () => {
 		const description = readRegisteredSubagentDescription();
 
-		for (const builtinName of ["scout", "worker", "planner"]) {
+		for (const builtinName of ["delegate", "delegate", "delegate"]) {
 			assert.doesNotMatch(description, new RegExp(`\\b${builtinName}\\b`));
 		}
 		assert.match(description, /use \{ action: "list" \} to inspect configured agents\/chains/i);

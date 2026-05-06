@@ -252,9 +252,9 @@ describe("slash command custom message delivery", { skip: !available ? "slash-co
 		};
 
 		registerSlashCommands!(pi, createState(process.cwd()));
-		await commands.get("run")!.handler("scout", createCommandContext({ sessionManager }));
+		await commands.get("run")!.handler("delegate", createCommandContext({ sessionManager }));
 
-		assert.deepEqual(requestedParams, { agent: "scout", task: "", clarify: false, agentScope: "both" });
+		assert.deepEqual(requestedParams, { agent: "delegate", task: "", clarify: false, agentScope: "both" });
 		assert.equal(sent.length, 2);
 		assert.equal((sent[0] as { display?: boolean }).display, true);
 		assert.equal((sent[0] as { content?: string }).content, "Running subagent...");
@@ -437,7 +437,7 @@ describe("slash command custom message delivery", { skip: !available ? "slash-co
 		await commands.get("parallel")!.handler("scout[output=x.md,outputMode=file-only,reads=a.md+b.md,progress] -- Review", createCommandContext());
 
 		assert.deepEqual(requestedParams, {
-			tasks: [{ agent: "scout", task: "Review", output: "x.md", outputMode: "file-only", reads: ["a.md", "b.md"], progress: true }],
+			tasks: [{ agent: "delegate", task: "Review", output: "x.md", outputMode: "file-only", reads: ["a.md", "b.md"], progress: true }],
 			clarify: false,
 			agentScope: "both",
 		});
@@ -491,7 +491,7 @@ describe("saved chain slash command", { skip: !available ? "slash-commands.ts no
 	it("/run and /chain accept dotted packaged runtime agent names", async () => {
 		await withTempProject("pi-packaged-agent-slash-", async (root) => {
 			fs.writeFileSync(path.join(root, ".pi", "agents", "code-analysis.scout.md"), `---
-name: scout
+name: delegate
 package: code-analysis
 description: Fast recon
 ---
@@ -560,8 +560,8 @@ Review {previous}
 			};
 
 			assert.deepEqual(runParams.chain?.map(({ agent, task }) => ({ agent, task })), [
-				{ agent: "scout", task: "Scan {task}" },
-				{ agent: "reviewer", task: "Review {previous}" },
+				{ agent: "delegate", task: "Scan {task}" },
+				{ agent: "delegate", task: "Review {previous}" },
 			]);
 			assert.equal(runParams.task, "Audit the auth flow");
 			assert.equal(runParams.clarify, false);
@@ -753,7 +753,7 @@ Gather context
 			const { params } = await captureSlashCommandParams("run-chain", "field-flow -- Shared task", root);
 
 			assert.deepEqual((params as { chain?: unknown[] }).chain?.[0], {
-				agent: "scout",
+				agent: "delegate",
 				task: "Gather context",
 				output: "context.md",
 				outputMode: "file-only",

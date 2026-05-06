@@ -158,7 +158,7 @@ describe("intercom result delivery cutover", { skip: !available ? "executor not 
 			tempArtifactsDir: tempDir,
 			getSubagentSessionRoot: () => tempDir,
 			expandTilde: (value: string) => value,
-			discoverAgents: () => ({ agents: options.agents ?? [makeAgent("worker")] }),
+			discoverAgents: () => ({ agents: options.agents ?? [makeAgent("delegate")] }),
 		});
 		return { executor, events, state };
 	}
@@ -169,7 +169,7 @@ describe("intercom result delivery cutover", { skip: !available ? "executor not 
 
 		const result = await executor.execute(
 			"single-intercom",
-			{ agent: "worker", task: "Implement feature" },
+			{ agent: "delegate", task: "Implement feature" },
 			new AbortController().signal,
 			undefined,
 			makeMinimalCtx(tempDir),
@@ -180,10 +180,10 @@ describe("intercom result delivery cutover", { skip: !available ? "executor not 
 		const payload = intercomEvents[0]!.payload as { children?: Array<{ agent?: string; intercomTarget?: string }>; message?: string; mode?: string };
 		assert.equal(payload.mode, "single");
 		assert.equal(payload.children?.length, 1);
-		assert.equal(payload.children?.[0]?.agent, "worker");
-		assert.match(payload.children?.[0]?.intercomTarget ?? "", /^subagent-worker-[a-f0-9]+-1$/);
+		assert.equal(payload.children?.[0]?.agent, "delegate");
+		assert.match(payload.children?.[0]?.intercomTarget ?? "", /^subagent-delegate-[a-f0-9]+-1$/);
 		assert.match(String(payload.message ?? ""), /Intercom targets below identify child sessions used while they were running/);
-		assert.match(String(payload.message ?? ""), /Run intercom target: subagent-worker-[a-f0-9]+-1/);
+		assert.match(String(payload.message ?? ""), /Run intercom target: subagent-delegate-[a-f0-9]+-1/);
 		assert.match(result.content[0]?.text ?? "", /Delivered single subagent result via intercom\./);
 		assert.doesNotMatch(result.content[0]?.text ?? "", /Full child output from worker/);
 		assert.equal(result.details?.results?.[0]?.finalOutput, undefined);
@@ -196,7 +196,7 @@ describe("intercom result delivery cutover", { skip: !available ? "executor not 
 
 		const result = await executor.execute(
 			"single-no-intercom",
-			{ agent: "worker", task: "Summarize feature" },
+			{ agent: "delegate", task: "Summarize feature" },
 			new AbortController().signal,
 			undefined,
 			makeMinimalCtx(tempDir),
@@ -212,7 +212,7 @@ describe("intercom result delivery cutover", { skip: !available ? "executor not 
 
 		const result = await executor.execute(
 			"single-no-ack",
-			{ agent: "worker", task: "Summarize feature" },
+			{ agent: "delegate", task: "Summarize feature" },
 			new AbortController().signal,
 			undefined,
 			makeMinimalCtx(tempDir),
@@ -324,7 +324,7 @@ describe("intercom result delivery cutover", { skip: !available ? "executor not 
 				state: "running",
 				startedAt: 100,
 				lastUpdate: 100,
-				steps: [{ agent: "worker", status: "running" }],
+				steps: [{ agent: "delegate", status: "running" }],
 			}, null, 2), "utf-8");
 			const { executor, events } = makeExecutor();
 
@@ -339,7 +339,7 @@ describe("intercom result delivery cutover", { skip: !available ? "executor not 
 			assert.equal(result.isError, undefined);
 			assert.match(result.content[0]?.text ?? "", /Delivered follow-up to live async child/);
 			const payload = events.emitted.find((entry) => entry.channel === "subagent:result-intercom")?.payload as { to?: string; message?: string } | undefined;
-			assert.equal(payload?.to, `subagent-worker-${runId}-1`);
+			assert.equal(payload?.to, `subagent-delegate-${runId}-1`);
 			assert.match(payload?.message ?? "", /Can you clarify the last change\?/);
 		} finally {
 			fs.rmSync(asyncDir, { recursive: true, force: true });
@@ -405,7 +405,7 @@ describe("intercom result delivery cutover", { skip: !available ? "executor not 
 				lastUpdate: 200,
 				cwd: tempDir,
 				sessionFile,
-				steps: [{ agent: "worker", status: "complete" }],
+				steps: [{ agent: "delegate", status: "complete" }],
 			}, null, 2), "utf-8");
 			const { executor } = makeExecutor();
 

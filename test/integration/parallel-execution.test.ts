@@ -308,11 +308,11 @@ Inspect`);
 
 	it("top-level parallel suppresses progress when the task is review-only", { skip: !createSubagentExecutor ? "executor not importable" : undefined }, async () => {
 		mockPi.onCall({ output: "Review done" });
-		const executor = makeExecutor([makeAgent("reviewer", { defaultProgress: true })]);
+		const executor = makeExecutor([makeAgent("delegate", { defaultProgress: true })]);
 
 		await executor.execute(
 			"parallel-read-only-progress",
-			{ tasks: [{ agent: "reviewer", task: "Review-only. Do not edit files. Return findings." }] },
+			{ tasks: [{ agent: "delegate", task: "Review-only. Do not edit files. Return findings." }] },
 			new AbortController().signal,
 			undefined,
 			makeMinimalCtx(tempDir),

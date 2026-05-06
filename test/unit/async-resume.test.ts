@@ -26,17 +26,17 @@ describe("async resume lookup", () => {
 				lastUpdate: 200,
 				cwd: root,
 				sessionFile,
-				steps: [{ agent: "worker", status: "complete" }],
+				steps: [{ agent: "delegate", status: "complete" }],
 			});
 
 			const target = resolveAsyncResumeTarget({ id: "run-a" }, { asyncDirRoot: asyncRoot, resultsDir: path.join(root, "results") });
 
 			assert.equal(target.kind, "revive");
 			assert.equal(target.runId, "run-abc");
-			assert.equal(target.agent, "worker");
+			assert.equal(target.agent, "delegate");
 			assert.equal(target.sessionFile, sessionFile);
 			assert.equal(target.cwd, root);
-			assert.equal(target.intercomTarget, "subagent-worker-run-abc-1");
+			assert.equal(target.intercomTarget, "subagent-delegate-run-abc-1");
 		} finally {
 			fs.rmSync(root, { recursive: true, force: true });
 		}
@@ -51,14 +51,14 @@ describe("async resume lookup", () => {
 				mode: "single",
 				state: "running",
 				startedAt: 100,
-				steps: [{ agent: "scout", status: "running" }],
+				steps: [{ agent: "delegate", status: "running" }],
 			});
 			writeJson(path.join(asyncRoot, "run-ab", "status.json"), {
 				runId: "run-ab",
 				mode: "single",
 				state: "running",
 				startedAt: 100,
-				steps: [{ agent: "worker", status: "running" }],
+				steps: [{ agent: "delegate", status: "running" }],
 			});
 
 			assert.throws(
@@ -100,7 +100,7 @@ describe("async resume lookup", () => {
 				startedAt: 100,
 				lastUpdate: 200,
 				sessionFile,
-				steps: [{ agent: "worker", status: "complete" }],
+				steps: [{ agent: "delegate", status: "complete" }],
 			});
 
 			assert.throws(
@@ -118,10 +118,10 @@ describe("async resume lookup", () => {
 			const resultsDir = path.join(root, "results");
 			writeJson(path.join(resultsDir, "run-result.json"), {
 				id: "run-result",
-				agent: "worker",
+				agent: "delegate",
 				success: true,
 				state: "complete",
-				results: [{ agent: "worker", sessionFile: { path: "session.jsonl" } }],
+				results: [{ agent: "delegate", sessionFile: { path: "session.jsonl" } }],
 			});
 
 			assert.throws(
@@ -143,7 +143,7 @@ describe("async resume lookup", () => {
 				mode: "single",
 				state: "running",
 				startedAt: 100,
-				steps: [{ agent: "worker", status: "running" }],
+				steps: [{ agent: "delegate", status: "running" }],
 			});
 
 			assert.throws(
@@ -165,13 +165,13 @@ describe("async resume lookup", () => {
 				state: "running",
 				startedAt: 100,
 				lastUpdate: 100,
-				steps: [{ agent: "scout", status: "running" }],
+				steps: [{ agent: "delegate", status: "running" }],
 			});
 
 			const target = resolveAsyncResumeTarget({ id: "run-live" }, { asyncDirRoot: asyncRoot, resultsDir: path.join(root, "results") });
 
 			assert.equal(target.kind, "live");
-			assert.equal(target.intercomTarget, "subagent-scout-run-live-1");
+			assert.equal(target.intercomTarget, "subagent-delegate-run-live-1");
 		} finally {
 			fs.rmSync(root, { recursive: true, force: true });
 		}
@@ -270,15 +270,15 @@ describe("async resume lookup", () => {
 			kind: "revive",
 			runId: "run-old",
 			state: "complete",
-			agent: "worker",
+			agent: "delegate",
 			index: 0,
-			intercomTarget: "subagent-worker-run-old-1",
+			intercomTarget: "subagent-delegate-run-old-1",
 			sessionFile: "/tmp/session.jsonl",
 		}, "What changed?");
 
 		assert.match(task, /Original run: run-old/);
 		assert.doesNotMatch(task, /async subagent conversation/);
-		assert.match(task, /Original agent: worker/);
+		assert.match(task, /Original agent: delegate/);
 		assert.match(task, /Original session file: \/tmp\/session\.jsonl/);
 		assert.match(task, /Follow-up:\nWhat changed\?/);
 	});

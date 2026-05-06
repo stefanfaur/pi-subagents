@@ -16,7 +16,7 @@ import {
 
 function makeAgent(overrides: Partial<AgentConfig> = {}): AgentConfig {
 	return {
-		name: "worker",
+		name: "delegate",
 		description: "Test worker",
 		systemPrompt: "Base prompt",
 		systemPromptMode: "replace",
@@ -43,7 +43,7 @@ describe("resolveIntercomBridgeMode", () => {
 
 describe("resolveIntercomSessionTarget", () => {
 	it("prefers an explicit session name", () => {
-		assert.equal(resolveIntercomSessionTarget("planner", "session-12345678"), "planner");
+		assert.equal(resolveIntercomSessionTarget("delegate", "session-12345678"), "delegate");
 	});
 
 	it("uses a runtime-only subagent chat alias when unnamed", () => {
@@ -53,7 +53,7 @@ describe("resolveIntercomSessionTarget", () => {
 
 describe("resolveSubagentIntercomTarget", () => {
 	it("builds stable child session targets from run metadata", () => {
-		assert.equal(resolveSubagentIntercomTarget("78f659a3", "worker"), "subagent-worker-78f659a3");
+		assert.equal(resolveSubagentIntercomTarget("78f659a3", "delegate"), "subagent-delegate-78f659a3");
 		assert.equal(resolveSubagentIntercomTarget("78f659a3", "senior executor", 1), "subagent-senior-executor-78f659a3-2");
 	});
 });

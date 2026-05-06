@@ -164,10 +164,10 @@ describe("single sync execution", { skip: !available ? "pi packages not availabl
 
 	it("fails implementation runs that complete without mutation attempts", async () => {
 		mockPi.onCall({ output: "Validation:\nlet rawFilename = params.filename.trim();" });
-		const agents = [makeAgent("worker")];
+		const agents = [makeAgent("delegate")];
 		const controlEvents: Array<{ message: string }> = [];
 
-		const result = await runSync(tempDir, agents, "worker", "Implement the approved file changes", {
+		const result = await runSync(tempDir, agents, "delegate", "Implement the approved file changes", {
 			runId: "guard-run",
 			onControlEvent: (event: { message: string }) => controlEvents.push(event),
 		});
@@ -186,9 +186,9 @@ describe("single sync execution", { skip: !available ? "pi packages not availabl
 
 	it("fails future-tense implementation summaries when no mutation attempt occurred", async () => {
 		mockPi.onCall({ output: "I’ll do that now and report back after implementing." });
-		const agents = [makeAgent("worker")];
+		const agents = [makeAgent("delegate")];
 
-		const result = await runSync(tempDir, agents, "worker", "Implement the approved fixes", {
+		const result = await runSync(tempDir, agents, "delegate", "Implement the approved fixes", {
 			runId: "guard-future-tense",
 		});
 
@@ -212,9 +212,9 @@ describe("single sync execution", { skip: !available ? "pi packages not availabl
 				events.assistantMessage("Applied edit"),
 			],
 		});
-		const agents = [makeAgent("worker")];
+		const agents = [makeAgent("delegate")];
 
-		const result = await runSync(tempDir, agents, "worker", "Implement the approved file changes", {
+		const result = await runSync(tempDir, agents, "delegate", "Implement the approved file changes", {
 			runId: "guard-success",
 		});
 
@@ -272,10 +272,10 @@ describe("single sync execution", { skip: !available ? "pi packages not availabl
 				events.assistantMessage("I need to retry the same edit."),
 			],
 		});
-		const agents = [makeAgent("worker")];
+		const agents = [makeAgent("delegate")];
 		const controlEvents: NonNullable<RunSyncResult["controlEvents"]> = [];
 
-		const result = await runSync(tempDir, agents, "worker", "Implement the approved fixes", {
+		const result = await runSync(tempDir, agents, "delegate", "Implement the approved fixes", {
 			runId: "run-failures",
 			controlConfig: { enabled: true, failedToolAttemptsBeforeAttention: 3, notifyOn: ["active_long_running", "needs_attention"] },
 			onControlEvent: (event: NonNullable<RunSyncResult["controlEvents"]>[number]) => controlEvents.push(event),
@@ -624,9 +624,9 @@ describe("single sync execution", { skip: !available ? "pi packages not availabl
 				events.assistantMessage("Found 2 files: file1.txt and file2.txt"),
 			],
 		});
-		const agents = makeAgentConfigs(["scout"]);
+		const agents = makeAgentConfigs(["delegate"]);
 
-		const result = await runSync(tempDir, agents, "scout", "List files", {});
+		const result = await runSync(tempDir, agents, "delegate", "List files", {});
 
 		assert.equal(result.exitCode, 0);
 		const output = getFinalOutput(result.messages);
@@ -666,9 +666,9 @@ describe("single sync execution", { skip: !available ? "pi packages not availabl
 	});
 
 	it("fails foreground runs on explicit unavailable pi-subagents skill requests without spawning", async () => {
-		const agents = [makeAgent("worker")];
+		const agents = [makeAgent("delegate")];
 
-		const result = await runSync(tempDir, agents, "worker", "Task", { skills: ["pi-subagents"] });
+		const result = await runSync(tempDir, agents, "delegate", "Task", { skills: ["pi-subagents"] });
 
 		assert.equal(result.exitCode, 1);
 		assert.equal(result.error, "Skills not found: pi-subagents");
@@ -676,9 +676,9 @@ describe("single sync execution", { skip: !available ? "pi packages not availabl
 	});
 
 	it("fails foreground runs when an agent default requests pi-subagents skill", async () => {
-		const agents = [makeAgent("worker", { skills: ["pi-subagents"] })];
+		const agents = [makeAgent("delegate", { skills: ["pi-subagents"] })];
 
-		const result = await runSync(tempDir, agents, "worker", "Task", {});
+		const result = await runSync(tempDir, agents, "delegate", "Task", {});
 
 		assert.equal(result.exitCode, 1);
 		assert.equal(result.error, "Skills not found: pi-subagents");

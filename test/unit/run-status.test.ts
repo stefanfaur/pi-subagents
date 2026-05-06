@@ -35,7 +35,7 @@ describe("async run status inspection", () => {
 				lastUpdate: 100,
 				currentStep: 0,
 				sessionFile,
-				steps: [{ agent: "scout", status: "running", startedAt: 100, sessionFile }],
+				steps: [{ agent: "delegate", status: "running", startedAt: 100, sessionFile }],
 			}, null, 2), "utf-8");
 
 			const result = inspectSubagentStatus({ id: "run-stale" }, {
@@ -50,7 +50,7 @@ describe("async run status inspection", () => {
 			assert.match(text, /State: failed/);
 			assert.match(text, /Diagnosis: Async runner process 12345 exited or disappeared/);
 			assert.match(text, new RegExp(`Result: ${path.join(resultsDir, "run-stale.json").replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
-			assert.match(text, /Step 1: scout failed, error: Async runner process 12345 exited or disappeared/);
+			assert.match(text, /Step 1: delegate failed, error: Async runner process 12345 exited or disappeared/);
 			assert.match(text, /Revive: subagent\(\{ action: "resume", id: "run-stale", message: "\.\.\." \}\)/);
 			const resultJson = JSON.parse(fs.readFileSync(path.join(resultsDir, "run-stale.json"), "utf-8"));
 			assert.equal(resultJson.success, false);
@@ -83,9 +83,9 @@ describe("async run status inspection", () => {
 				chainStepCount: 1,
 				parallelGroups: [{ start: 0, count: 3, stepIndex: 0 }],
 				steps: [
-					{ agent: "reviewer", status: "running", startedAt: 100 },
-					{ agent: "reviewer", status: "running", startedAt: 100 },
-					{ agent: "reviewer", status: "pending" },
+					{ agent: "delegate", status: "running", startedAt: 100 },
+					{ agent: "delegate", status: "running", startedAt: 100 },
+					{ agent: "delegate", status: "pending" },
 				],
 			}, null, 2), "utf-8");
 
@@ -100,12 +100,12 @@ describe("async run status inspection", () => {
 			assert.match(text, /Mode: parallel/);
 			assert.match(text, /Progress: 2 agents running · 0\/3 done/);
 			assert.match(text, new RegExp(`Output: ${runOutputPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
-			assert.match(text, /Agent 1\/3: reviewer running/);
-			assert.match(text, /Agent 2\/3: reviewer running/);
-			assert.match(text, /Agent 3\/3: reviewer pending/);
+			assert.match(text, /Agent 1\/3: delegate running/);
+			assert.match(text, /Agent 2\/3: delegate running/);
+			assert.match(text, /Agent 3\/3: delegate pending/);
 			assert.match(text, new RegExp(`  Output: ${firstStepOutputPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
 			assert.match(text, new RegExp(`  Output: ${secondStepOutputPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
-			assert.doesNotMatch(text, /Step 1: reviewer/);
+			assert.doesNotMatch(text, /Step 1: delegate/);
 		} finally {
 			fs.rmSync(root, { recursive: true, force: true });
 		}
@@ -190,8 +190,8 @@ describe("async run status inspection", () => {
 				chainStepCount: 3,
 				parallelGroups: [{ start: 1, count: 2, stepIndex: 1 }],
 				steps: [
-					{ agent: "scout", status: "complete", startedAt: 100 },
-					{ agent: "reviewer", status: "running", startedAt: 100 },
+					{ agent: "delegate", status: "complete", startedAt: 100 },
+					{ agent: "delegate", status: "running", startedAt: 100 },
 					{ agent: "auditor", status: "pending" },
 					{ agent: "writer", status: "pending" },
 				],
@@ -205,8 +205,8 @@ describe("async run status inspection", () => {
 			});
 
 			const text = textContent(result);
-			assert.match(text, /Step 1\/3: scout complete/);
-			assert.match(text, /Step 2\/3 Agent 1\/2: reviewer running/);
+			assert.match(text, /Step 1\/3: delegate complete/);
+			assert.match(text, /Step 2\/3 Agent 1\/2: delegate running/);
 			assert.match(text, /Step 2\/3 Agent 2\/2: auditor pending/);
 			assert.match(text, /Step 3\/3: writer pending/);
 		} finally {
@@ -227,7 +227,7 @@ describe("async run status inspection", () => {
 				pid: 12345,
 				startedAt: 100,
 				lastUpdate: 100,
-				steps: [{ agent: "scout", status: "running", startedAt: 100 }],
+				steps: [{ agent: "delegate", status: "running", startedAt: 100 }],
 			}, null, 2), "utf-8");
 
 			const result = inspectSubagentStatus({ id: "run-live" }, {
@@ -238,8 +238,8 @@ describe("async run status inspection", () => {
 			});
 
 			const text = textContent(result);
-			assert.match(text, /Step 1: scout running/);
-			assert.match(text, /Intercom target: subagent-scout-run-live-1 \(if registered\)/);
+			assert.match(text, /Step 1: delegate running/);
+			assert.match(text, /Intercom target: subagent-delegate-run-live-1 \(if registered\)/);
 		} finally {
 			fs.rmSync(root, { recursive: true, force: true });
 		}
@@ -321,7 +321,7 @@ describe("async run status inspection", () => {
 			fs.writeFileSync(sessionFile, "", "utf-8");
 			fs.writeFileSync(path.join(resultsDir, "run-result-only.json"), JSON.stringify({
 				id: "run-result-only",
-				agent: "worker",
+				agent: "delegate",
 				success: false,
 				state: "failed",
 				sessionFile,

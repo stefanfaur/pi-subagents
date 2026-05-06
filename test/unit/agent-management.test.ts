@@ -36,7 +36,7 @@ describe("agent management config parsing", () => {
 
 	it("surfaces JSON parse errors for update config strings", () => {
 		const result = handleUpdate(
-			{ agent: "reviewer", config: '{"description":' },
+			{ agent: "delegate", config: '{"description":' },
 			{ cwd: tempDir, modelRegistry: { getAvailable: () => [] } },
 		);
 
@@ -97,7 +97,7 @@ describe("agent management config parsing", () => {
 		const ctx = { cwd: tempDir, modelRegistry: { getAvailable: () => [] } };
 		fs.mkdirSync(path.join(tempDir, ".pi", "agents"), { recursive: true });
 		fs.writeFileSync(path.join(tempDir, ".pi", "agents", "code-analysis.scout.md"), `---
-name: scout
+name: delegate
 package: code-analysis
 description: Fast recon
 ---

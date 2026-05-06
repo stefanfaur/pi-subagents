@@ -27,8 +27,8 @@ describe("async status helpers", () => {
 				currentStep: 1,
 				outputFile,
 				steps: [
-					{ agent: "scout", status: "complete", durationMs: 10 },
-					{ agent: "worker", status: "running", durationMs: 20 },
+					{ agent: "delegate", status: "complete", durationMs: 10 },
+					{ agent: "delegate", status: "running", durationMs: 20 },
 				],
 			});
 			createAsyncDir(root, "run-b", {
@@ -37,7 +37,7 @@ describe("async status helpers", () => {
 				state: "complete",
 				startedAt: 50,
 				lastUpdate: 75,
-				steps: [{ agent: "reviewer", status: "complete" }],
+				steps: [{ agent: "delegate", status: "complete" }],
 			});
 
 			const runs = listAsyncRuns(root, { states: ["queued", "running"] });
@@ -45,7 +45,7 @@ describe("async status helpers", () => {
 			assert.equal(runs[0]?.id, "run-a");
 			assert.equal(runs[0]?.cwd, "/repo-a");
 			assert.equal(runs[0]?.steps.length, 2);
-			assert.equal(runs[0]?.steps[1]?.agent, "worker");
+			assert.equal(runs[0]?.steps[1]?.agent, "delegate");
 			assert.equal(runs[0]?.steps[1]?.status, "running");
 			assert.match(formatAsyncRunList(runs), /output: .*output-1\.log/);
 		} finally {
@@ -65,7 +65,7 @@ describe("async status helpers", () => {
 				lastActivityAt,
 				startedAt: Date.now() - 70_000,
 				lastUpdate: Date.now(),
-				steps: [{ agent: "worker", status: "running", activityState: "needs_attention", lastActivityAt }],
+				steps: [{ agent: "delegate", status: "running", activityState: "needs_attention", lastActivityAt }],
 			});
 
 			const runs = listAsyncRuns(root, { states: ["running"] });
@@ -89,7 +89,7 @@ describe("async status helpers", () => {
 				lastActivityAt: now - 90_000,
 				startedAt: now - 120_000,
 				lastUpdate: now,
-				steps: [{ agent: "worker", status: "running", lastActivityAt: now - 90_000 }],
+				steps: [{ agent: "delegate", status: "running", lastActivityAt: now - 90_000 }],
 			});
 
 			const runs = listAsyncRuns(root, { states: ["running"] });
@@ -140,7 +140,7 @@ describe("async status helpers", () => {
 				startedAt: 100,
 				lastUpdate: 200,
 				endedAt: 200,
-				steps: [{ agent: "worker", status: "complete" }],
+				steps: [{ agent: "delegate", status: "complete" }],
 			});
 
 			const runs = listAsyncRuns(root, { states: ["paused"] });
@@ -181,7 +181,7 @@ describe("async status helpers", () => {
 				mode: "single",
 				state: "running",
 				startedAt: 100,
-				steps: [{ agent: "worker", status: "running" }],
+				steps: [{ agent: "delegate", status: "running" }],
 			});
 
 			assert.throws(
@@ -204,7 +204,7 @@ describe("async status helpers", () => {
 				pid: 12345,
 				startedAt: 100,
 				lastUpdate: 100,
-				steps: [{ agent: "scout", status: "running", startedAt: 100 }],
+				steps: [{ agent: "delegate", status: "running", startedAt: 100 }],
 			});
 
 			const active = listAsyncRuns(root, {
@@ -237,9 +237,9 @@ describe("async status helpers", () => {
 				chainStepCount: 1,
 				parallelGroups: [{ start: 0, count: 3, stepIndex: 0 }],
 				steps: [
-					{ agent: "scout", status: "running", durationMs: 12_000 },
-					{ agent: "reviewer", status: "running", durationMs: 11_000 },
-					{ agent: "worker", status: "pending" },
+					{ agent: "delegate", status: "running", durationMs: 12_000 },
+					{ agent: "delegate", status: "running", durationMs: 11_000 },
+					{ agent: "delegate", status: "pending" },
 				],
 			});
 			const text = formatAsyncRunList(listAsyncRuns(root, { states: ["running"] }));
@@ -264,9 +264,9 @@ describe("async status helpers", () => {
 				chainStepCount: 1,
 				parallelGroups: [{ start: 0, count: 3, stepIndex: 0 }],
 				steps: [
-					{ agent: "scout", status: "failed" },
-					{ agent: "reviewer", status: "failed" },
-					{ agent: "worker", status: "paused" },
+					{ agent: "delegate", status: "failed" },
+					{ agent: "delegate", status: "failed" },
+					{ agent: "delegate", status: "paused" },
 				],
 			});
 			const text = formatAsyncRunList(listAsyncRuns(root, { states: ["failed"] }));
@@ -290,9 +290,9 @@ describe("async status helpers", () => {
 				chainStepCount: 2,
 				parallelGroups: [{ start: 0, count: 3, stepIndex: 0 }],
 				steps: [
-					{ agent: "scout", status: "running", durationMs: 12_000 },
-					{ agent: "reviewer", status: "running", durationMs: 11_000 },
-					{ agent: "worker", status: "pending" },
+					{ agent: "delegate", status: "running", durationMs: 12_000 },
+					{ agent: "delegate", status: "running", durationMs: 11_000 },
+					{ agent: "delegate", status: "pending" },
 					{ agent: "writer", status: "pending" },
 				],
 			});
@@ -316,9 +316,9 @@ describe("async status helpers", () => {
 				chainStepCount: 1,
 				parallelGroups: [{ start: 0, count: 3, stepIndex: 0 }],
 				steps: [
-					{ agent: "scout", status: "complete", durationMs: 12_000 },
-					{ agent: "reviewer", status: "running", durationMs: 11_000 },
-					{ agent: "worker", status: "pending" },
+					{ agent: "delegate", status: "complete", durationMs: 12_000 },
+					{ agent: "delegate", status: "running", durationMs: 11_000 },
+					{ agent: "delegate", status: "pending" },
 				],
 			});
 			const text = formatAsyncRunList(listAsyncRuns(root, { states: ["running"] }));
@@ -342,7 +342,7 @@ describe("async status helpers", () => {
 				chainStepCount: 2,
 				parallelGroups: [{ start: 0, count: 3, stepIndex: 4 }, null, "bad"],
 				steps: [
-					{ agent: "scout", status: "running", durationMs: 12_000 },
+					{ agent: "delegate", status: "running", durationMs: 12_000 },
 					{ agent: "writer", status: "pending" },
 				],
 			});
@@ -367,8 +367,8 @@ describe("async status helpers", () => {
 				chainStepCount: 1,
 				parallelGroups: "bad",
 				steps: [
-					{ agent: "scout", status: "running" },
-					{ agent: "reviewer", status: "pending" },
+					{ agent: "delegate", status: "running" },
+					{ agent: "delegate", status: "pending" },
 				],
 			});
 			const text = formatAsyncRunList(listAsyncRuns(root, { states: ["running"] }));
@@ -390,8 +390,8 @@ describe("async status helpers", () => {
 				lastUpdate: 300,
 				currentStep: 0,
 				steps: [
-					{ agent: "scout", status: "running", durationMs: 12_000 },
-					{ agent: "reviewer", status: "pending" },
+					{ agent: "delegate", status: "running", durationMs: 12_000 },
+					{ agent: "delegate", status: "pending" },
 				],
 			});
 			const text = formatAsyncRunList(listAsyncRuns(root, { states: ["running"] }));

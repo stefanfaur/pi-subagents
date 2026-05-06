@@ -25,7 +25,7 @@ describe("registerSubagentNotify", () => {
 
 		events.emit(SUBAGENT_ASYNC_COMPLETE_EVENT, {
 			id: "notify-empty-1",
-			agent: "worker",
+			agent: "delegate",
 			success: true,
 			summary: "",
 			exitCode: 0,
@@ -36,7 +36,7 @@ describe("registerSubagentNotify", () => {
 		assert.deepEqual(sent[0], {
 			message: {
 				customType: "subagent-notify",
-				content: "Background task completed: **worker**\n\n(no output)",
+				content: "Background task completed: **delegate**\n\n(no output)",
 				display: true,
 			},
 			options: { triggerTurn: true },
@@ -49,7 +49,7 @@ describe("registerSubagentNotify", () => {
 
 		events.emit(SUBAGENT_ASYNC_COMPLETE_EVENT, {
 			id: "notify-summary-1",
-			agent: "worker",
+			agent: "delegate",
 			success: true,
 			summary,
 			exitCode: 0,
@@ -62,7 +62,7 @@ describe("registerSubagentNotify", () => {
 		assert.deepEqual(sent[0], {
 			message: {
 				customType: "subagent-notify",
-				content: `Background task completed: **worker** (2/3)\n\n${summary}`,
+				content: `Background task completed: **delegate** (2/3)\n\n${summary}`,
 				display: true,
 			},
 			options: { triggerTurn: true },
@@ -74,7 +74,7 @@ describe("registerSubagentNotify", () => {
 
 		events.emit(SUBAGENT_ASYNC_COMPLETE_EVENT, {
 			id: "notify-path-1",
-			agent: "worker",
+			agent: "delegate",
 			success: true,
 			summary: "Done",
 			exitCode: 0,
@@ -85,7 +85,7 @@ describe("registerSubagentNotify", () => {
 		assert.deepEqual(sent, [{
 			message: {
 				customType: "subagent-notify",
-				content: "Background task completed: **worker**\n\nDone\n\nSession file: /tmp/session.jsonl",
+				content: "Background task completed: **delegate**\n\nDone\n\nSession file: /tmp/session.jsonl",
 				display: true,
 			},
 			options: { triggerTurn: true },
@@ -97,7 +97,7 @@ describe("registerSubagentNotify", () => {
 
 		events.emit(SUBAGENT_ASYNC_COMPLETE_EVENT, {
 			id: "notify-paused-1",
-			agent: "worker",
+			agent: "delegate",
 			success: false,
 			state: "paused",
 			summary: "Paused after interrupt. Waiting for explicit next action.",
@@ -108,7 +108,7 @@ describe("registerSubagentNotify", () => {
 		assert.deepEqual(sent[0], {
 			message: {
 				customType: "subagent-notify",
-				content: "Background task paused: **worker**\n\nPaused after interrupt. Waiting for explicit next action.",
+				content: "Background task paused: **delegate**\n\nPaused after interrupt. Waiting for explicit next action.",
 				display: true,
 			},
 			options: { triggerTurn: true },

@@ -34,7 +34,7 @@ describe("slash live state", { skip: !available ? "slash-live-state.ts not impor
 	it("streams progress updates into the visible slash snapshot", () => {
 		clearSlashSnapshots!();
 		const details = buildSlashInitialResult!("req-1", {
-			agent: "scout",
+			agent: "delegate",
 			task: "scan codebase",
 		});
 
@@ -43,7 +43,7 @@ describe("slash live state", { skip: !available ? "slash-live-state.ts not impor
 			currentTool: "find",
 			toolCount: 2,
 			progress: [{
-				agent: "scout",
+				agent: "delegate",
 				status: "running",
 				task: "scan codebase",
 				currentTool: "find",
@@ -66,7 +66,7 @@ describe("slash live state", { skip: !available ? "slash-live-state.ts not impor
 	it("prefers finalized snapshots and restores them from persisted custom messages", () => {
 		clearSlashSnapshots!();
 		const details = buildSlashInitialResult!("req-2", {
-			agent: "scout",
+			agent: "delegate",
 			task: "scan codebase",
 		});
 
@@ -77,7 +77,7 @@ describe("slash live state", { skip: !available ? "slash-live-state.ts not impor
 				details: {
 					mode: "single",
 					results: [{
-						agent: "scout",
+						agent: "delegate",
 						task: "scan codebase",
 						exitCode: 0,
 						messages: [],

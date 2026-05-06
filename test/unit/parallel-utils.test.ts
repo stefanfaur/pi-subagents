@@ -47,7 +47,7 @@ describe("flattenSteps", () => {
 
 	it("expands parallel groups into individual steps", () => {
 		const steps: RunnerStep[] = [
-			{ agent: "scout", task: "find info" },
+			{ agent: "delegate", task: "find info" },
 			{
 				parallel: [
 					{ agent: "reviewer-a", task: "review part 1" },
@@ -60,7 +60,7 @@ describe("flattenSteps", () => {
 		assert.equal(flat.length, 4);
 		assert.deepEqual(
 			flat.map((s) => s.agent),
-			["scout", "reviewer-a", "reviewer-b", "summarizer"],
+			["delegate", "reviewer-a", "reviewer-b", "summarizer"],
 		);
 	});
 

@@ -30,7 +30,7 @@ function needsAttentionEvent(overrides: Partial<ControlEvent> = {}): ControlEven
 		to: "needs_attention",
 		ts: 1,
 		runId: "run-1",
-		agent: "worker",
+		agent: "delegate",
 		index: 0,
 		message: "worker needs attention",
 		reason: "idle",
@@ -78,7 +78,7 @@ describe("subagent control notice delivery", () => {
 			mode: "chain",
 			startedAt: 0,
 			updatedAt: 0,
-			currentAgent: "worker",
+			currentAgent: "delegate",
 			currentIndex: 0,
 			currentActivityState: "needs_attention",
 		});
@@ -105,7 +105,7 @@ describe("subagent control notice delivery", () => {
 			mode: "chain",
 			startedAt: 0,
 			updatedAt: 0,
-			currentAgent: "worker",
+			currentAgent: "delegate",
 			currentIndex: 0,
 			currentActivityState: "needs_attention",
 		});
@@ -132,7 +132,7 @@ describe("subagent control notice delivery", () => {
 			mode: "chain",
 			startedAt: 0,
 			updatedAt: 0,
-			currentAgent: "worker",
+			currentAgent: "delegate",
 			currentIndex: 0,
 			currentActivityState: "needs_attention",
 		});

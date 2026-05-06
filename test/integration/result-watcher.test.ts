@@ -478,7 +478,7 @@ describe("result watcher", () => {
 				fs.writeFileSync(path.join(resultsDir, "async-2.json"), JSON.stringify({
 					id: "async-2",
 					runId: "run-456",
-					agent: "worker",
+					agent: "delegate",
 					success: true,
 					state: "complete",
 					summary: "Worker summary",

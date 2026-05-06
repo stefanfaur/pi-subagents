@@ -50,10 +50,10 @@ describe("prompt-template delegation bridge", () => {
 				executeCalls++;
 				onUpdate({
 					details: {
-						results: [{ agent: "worker", model: "openai/gpt-5-mini" }],
+						results: [{ agent: "delegate", model: "openai/gpt-5-mini" }],
 						progress: [{
 							index: 0,
-							agent: "worker",
+							agent: "delegate",
 							currentTool: "read",
 							currentToolArgs: "src/extension/index.ts",
 							recentOutput: ["line 1"],
@@ -78,7 +78,7 @@ describe("prompt-template delegation bridge", () => {
 
 		events.emit(PROMPT_TEMPLATE_SUBAGENT_REQUEST_EVENT, {
 			requestId: "r1",
-			agent: "worker",
+			agent: "delegate",
 			task: "do work",
 			context: "fresh",
 			model: "openai/gpt-5",
@@ -122,10 +122,10 @@ describe("prompt-template delegation bridge", () => {
 			execute: async (_requestId, _request, _signal, _ctx, onUpdate) => {
 				onUpdate({
 					details: {
-						results: [{ agent: "worker", model: "openai/gpt-5-mini" }],
+						results: [{ agent: "delegate", model: "openai/gpt-5-mini" }],
 						progress: [{
 							index: 0,
-							agent: "worker",
+							agent: "delegate",
 							recentOutput: ["line 1", 123 as unknown as string],
 						}],
 					},
@@ -138,7 +138,7 @@ describe("prompt-template delegation bridge", () => {
 		const responsePromise = once(events, PROMPT_TEMPLATE_SUBAGENT_RESPONSE_EVENT);
 		events.emit(PROMPT_TEMPLATE_SUBAGENT_REQUEST_EVENT, {
 			requestId: "r-malformed-output",
-			agent: "worker",
+			agent: "delegate",
 			task: "do work",
 			context: "fresh",
 			model: "openai/gpt-5",
@@ -170,7 +170,7 @@ describe("prompt-template delegation bridge", () => {
 		const responsePromise = once(events, PROMPT_TEMPLATE_SUBAGENT_RESPONSE_EVENT);
 		events.emit(PROMPT_TEMPLATE_SUBAGENT_REQUEST_EVENT, {
 			requestId: "r2",
-			agent: "worker",
+			agent: "delegate",
 			task: "do work",
 			context: "fresh",
 			model: "openai/gpt-5",
@@ -199,7 +199,7 @@ describe("prompt-template delegation bridge", () => {
 		const responsePromise = once(events, PROMPT_TEMPLATE_SUBAGENT_RESPONSE_EVENT);
 		events.emit(PROMPT_TEMPLATE_SUBAGENT_REQUEST_EVENT, {
 			requestId: "r3",
-			agent: "worker",
+			agent: "delegate",
 			task: "do work",
 			context: "fresh",
 			model: "openai/gpt-5",
@@ -230,7 +230,7 @@ describe("prompt-template delegation bridge", () => {
 
 		events.emit(PROMPT_TEMPLATE_SUBAGENT_REQUEST_EVENT, {
 			requestId: "r4",
-			agent: "worker",
+			agent: "delegate",
 			task: "do work",
 			context: "fresh",
 			model: "openai/gpt-5",
@@ -261,7 +261,7 @@ describe("prompt-template delegation bridge", () => {
 
 		events.emit(PROMPT_TEMPLATE_SUBAGENT_REQUEST_EVENT, {
 			requestId: "r5",
-			agent: "worker",
+			agent: "delegate",
 			task: "do work",
 			context: "fresh",
 			model: "openai/gpt-5",

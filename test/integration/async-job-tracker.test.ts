@@ -103,7 +103,7 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 				completionRetentionMs: 5,
 			});
 			tracker.resetJobs(ui.ctx as never);
-			tracker.handleStarted({ id: "run-1", asyncDir: path.join(asyncRoot, "run-1"), agent: "worker" });
+			tracker.handleStarted({ id: "run-1", asyncDir: path.join(asyncRoot, "run-1"), agent: "delegate" });
 			tracker.handleComplete({ id: "run-1", success: true });
 
 			assert.equal(state.asyncJobs.size, 1);
@@ -127,15 +127,15 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 			tracker.handleStarted({
 				id: "run-parallel-start",
 				asyncDir: path.join(asyncRoot, "run-parallel-start"),
-				agent: "scout",
-				agents: ["scout", "reviewer", "worker", "writer"],
+				agent: "delegate",
+				agents: ["delegate", "delegate", "delegate", "writer"],
 				chain: ["[scout+reviewer+worker]", "writer"],
 				chainStepCount: 2,
 				parallelGroups: [{ start: 0, count: 3, stepIndex: 0 }],
 			});
 
 			const job = state.asyncJobs.get("run-parallel-start");
-			assert.deepEqual(job?.agents, ["scout", "reviewer", "worker"]);
+			assert.deepEqual(job?.agents, ["delegate", "delegate", "delegate"]);
 			assert.equal(job?.chainStepCount, 2);
 			assert.deepEqual(job?.parallelGroups, [{ start: 0, count: 3, stepIndex: 0 }]);
 			assert.equal(job?.stepsTotal, 3);
@@ -160,9 +160,9 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 				chainStepCount: 3,
 				parallelGroups: [{ start: 1, count: 2, stepIndex: 1 }],
 				steps: [
-					{ agent: "scout", status: "complete" },
+					{ agent: "delegate", status: "complete" },
 					{
-						agent: "reviewer",
+						agent: "delegate",
 						status: "running",
 						currentTool: "read",
 						currentToolArgs: "src/tui/render.ts",
@@ -181,13 +181,13 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 				pollIntervalMs: 10,
 			});
 			tracker.resetJobs(ui.ctx as never);
-			tracker.handleStarted({ id: "run-chain", asyncDir: runDir, mode: "chain", agents: ["scout", "reviewer", "auditor", "writer"] });
+			tracker.handleStarted({ id: "run-chain", asyncDir: runDir, mode: "chain", agents: ["delegate", "delegate", "auditor", "writer"] });
 
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			const job = state.asyncJobs.get("run-chain");
 			assert.deepEqual(job?.steps?.map((step: { index?: number }) => step.index), [1, 2]);
-			assert.deepEqual(job?.agents, ["reviewer", "auditor"]);
+			assert.deepEqual(job?.agents, ["delegate", "auditor"]);
 			assert.equal(job?.steps?.[0]?.currentTool, "read");
 			assert.equal(job?.steps?.[0]?.currentToolArgs, "src/tui/render.ts");
 			assert.deepEqual(job?.steps?.[0]?.recentTools?.map((tool: { tool: string; args: string }) => ({ tool: tool.tool, args: tool.args })), [{ tool: "grep", args: "async widget" }]);
@@ -208,7 +208,7 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 				state: "complete",
 				startedAt: Date.now() - 1000,
 				lastUpdate: Date.now(),
-				steps: [{ agent: "worker", status: "complete" }],
+				steps: [{ agent: "delegate", status: "complete" }],
 			}), "utf-8");
 
 			const state = createState();
@@ -219,7 +219,7 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 				pollIntervalMs: 10,
 			});
 			tracker.resetJobs(ui.ctx as never);
-			tracker.handleStarted({ id: "run-2", asyncDir: runDir, agent: "worker" });
+			tracker.handleStarted({ id: "run-2", asyncDir: runDir, agent: "delegate" });
 
 			await new Promise((resolve) => setTimeout(resolve, 80));
 
@@ -244,7 +244,7 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 				pid: 12345,
 				startedAt: Date.now() - 1000,
 				lastUpdate: Date.now() - 1000,
-				steps: [{ agent: "worker", status: "running", startedAt: Date.now() - 1000 }],
+				steps: [{ agent: "delegate", status: "running", startedAt: Date.now() - 1000 }],
 			}), "utf-8");
 
 			const state = createState();
@@ -258,7 +258,7 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 				now: () => Date.now(),
 			});
 			tracker.resetJobs(ui.ctx as never);
-			tracker.handleStarted({ id: "run-stale", asyncDir: runDir, agent: "worker" });
+			tracker.handleStarted({ id: "run-stale", asyncDir: runDir, agent: "delegate" });
 
 			await new Promise((resolve) => setTimeout(resolve, 80));
 
@@ -293,7 +293,7 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 				pid: 12345,
 				sessionId: "session-current",
 				mode: "parallel",
-				agents: ["scout", "reviewer", "worker"],
+				agents: ["delegate", "delegate", "delegate"],
 				chainStepCount: 1,
 				parallelGroups: [{ start: 0, count: 3, stepIndex: 0 }],
 			});
@@ -310,9 +310,9 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 			assert.equal(status.chainStepCount, 1);
 			assert.deepEqual(status.parallelGroups, [{ start: 0, count: 3, stepIndex: 0 }]);
 			assert.deepEqual(status.steps.map((step: { agent: string; status: string }) => [step.agent, step.status]), [
-				["scout", "failed"],
-				["reviewer", "failed"],
-				["worker", "failed"],
+				["delegate", "failed"],
+				["delegate", "failed"],
+				["delegate", "failed"],
 			]);
 			assert.equal(result.success, false);
 			assert.equal(result.sessionId, "session-current");
@@ -336,7 +336,7 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 				pollIntervalMs: 10,
 			});
 			tracker.resetJobs(ui.ctx as never);
-			tracker.handleStarted({ id: "run-bad-status", asyncDir: runDir, agent: "worker" });
+			tracker.handleStarted({ id: "run-bad-status", asyncDir: runDir, agent: "delegate" });
 
 			await new Promise((resolve) => setTimeout(resolve, 80));
 
@@ -358,7 +358,7 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 				state: "running",
 				startedAt: Date.now() - 1000,
 				lastUpdate: Date.now(),
-				steps: [{ agent: "worker", status: "running" }],
+				steps: [{ agent: "delegate", status: "running" }],
 			}), "utf-8");
 			const eventPath = path.join(runDir, "events.jsonl");
 			const partialRecord = JSON.stringify({
@@ -369,8 +369,8 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 					to: "needs_attention",
 					ts: 123,
 					runId: "run-partial",
-					agent: "worker",
-					message: "worker needs attention",
+					agent: "delegate",
+					message: "delegate needs attention",
 				},
 			});
 			fs.writeFileSync(eventPath, partialRecord, "utf-8");
@@ -380,7 +380,7 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 			const tracker = trackerMod!.createAsyncJobTracker(recorder.pi, state as never, asyncRoot, {
 				pollIntervalMs: 10,
 			});
-			tracker.handleStarted({ id: "run-partial", asyncDir: runDir, agent: "worker" });
+			tracker.handleStarted({ id: "run-partial", asyncDir: runDir, agent: "delegate" });
 
 			await new Promise((resolve) => setTimeout(resolve, 30));
 			assert.equal(recorder.events.length, 0);
@@ -407,7 +407,7 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 				currentTool: "edit",
 				currentToolStartedAt: Date.now() - 100,
 				currentPath: "src/runs/background/subagent-runner.ts",
-				steps: [{ agent: "worker", status: "running" }],
+				steps: [{ agent: "delegate", status: "running" }],
 			}), "utf-8");
 
 			const state = createState();
@@ -415,7 +415,7 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 			const tracker = trackerMod!.createAsyncJobTracker(recorder.pi, state as never, asyncRoot, {
 				pollIntervalMs: 10,
 			});
-			tracker.handleStarted({ id: "run-clear-tool", asyncDir: runDir, agent: "worker" });
+			tracker.handleStarted({ id: "run-clear-tool", asyncDir: runDir, agent: "delegate" });
 
 			await new Promise((resolve) => setTimeout(resolve, 30));
 			let job = state.asyncJobs.get("run-clear-tool");
@@ -428,7 +428,7 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 				state: "running",
 				startedAt: Date.now() - 1000,
 				lastUpdate: Date.now(),
-				steps: [{ agent: "worker", status: "running" }],
+				steps: [{ agent: "delegate", status: "running" }],
 			}), "utf-8");
 
 			await new Promise((resolve) => setTimeout(resolve, 30));
@@ -452,7 +452,7 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 				state: "running",
 				startedAt: Date.now() - 1000,
 				lastUpdate: Date.now(),
-				steps: [{ agent: "worker", status: "running" }],
+				steps: [{ agent: "delegate", status: "running" }],
 			}), "utf-8");
 			fs.writeFileSync(path.join(runDir, "events.jsonl"), `${JSON.stringify({
 				type: "subagent.control",
@@ -462,8 +462,8 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 					to: "needs_attention",
 					ts: 123,
 					runId: "run-channels",
-					agent: "worker",
-					message: "worker needs attention",
+					agent: "delegate",
+					message: "delegate needs attention",
 				},
 				intercom: { to: "main", message: "SUBAGENT NEEDS ATTENTION: worker in run run-channels." },
 			})}\n`, "utf-8");
@@ -473,7 +473,7 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 			const tracker = trackerMod!.createAsyncJobTracker(recorder.pi, state as never, asyncRoot, {
 				pollIntervalMs: 10,
 			});
-			tracker.handleStarted({ id: "run-channels", asyncDir: runDir, agent: "worker" });
+			tracker.handleStarted({ id: "run-channels", asyncDir: runDir, agent: "delegate" });
 
 			await new Promise((resolve) => setTimeout(resolve, 30));
 			assert.equal(recorder.events.some((event) => event.channel === "subagent:control-event"), false);
@@ -494,7 +494,7 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 				state: "running",
 				startedAt: Date.now() - 1000,
 				lastUpdate: Date.now(),
-				steps: [{ agent: "worker", status: "running" }],
+				steps: [{ agent: "delegate", status: "running" }],
 			}), "utf-8");
 			fs.writeFileSync(path.join(runDir, "events.jsonl"), `${JSON.stringify({
 				type: "subagent.control",
@@ -504,7 +504,7 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 					to: "active_long_running",
 					ts: 123,
 					runId: "run-active-intercom",
-					agent: "worker",
+					agent: "delegate",
 					message: "worker is still active but long-running",
 				},
 				intercom: { to: "main", message: "stale active notice" },
@@ -515,7 +515,7 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 			const tracker = trackerMod!.createAsyncJobTracker(recorder.pi, state as never, asyncRoot, {
 				pollIntervalMs: 10,
 			});
-			tracker.handleStarted({ id: "run-active-intercom", asyncDir: runDir, agent: "worker" });
+			tracker.handleStarted({ id: "run-active-intercom", asyncDir: runDir, agent: "delegate" });
 
 			await new Promise((resolve) => setTimeout(resolve, 30));
 			assert.equal(recorder.events.some((event) => event.channel === "subagent:control-event"), true);
@@ -536,20 +536,20 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 				state: "running",
 				startedAt: Date.now() - 1000,
 				lastUpdate: Date.now(),
-				steps: [{ agent: "worker", status: "running" }],
+				steps: [{ agent: "delegate", status: "running" }],
 			}), "utf-8");
 			fs.writeFileSync(path.join(runDir, "events.jsonl"), `${JSON.stringify({
 				type: "subagent.control",
 				channels: ["event", "intercom"],
-				childIntercomTarget: "subagent-worker-run-3-1",
-				noticeText: "Subagent needs attention: worker\nNudge: intercom({ action: \"send\", to: \"subagent-worker-run-3-1\", message: \"<message>\" })",
+				childIntercomTarget: "subagent-delegate-run-3-1",
+				noticeText: "Subagent needs attention: worker\nNudge: intercom({ action: \"send\", to: \"subagent-delegate-run-3-1\", message: \"<message>\" })",
 				event: {
 					type: "needs_attention",
 					to: "needs_attention",
 					ts: 123,
 					runId: "run-3",
-					agent: "worker",
-					message: "worker needs attention",
+					agent: "delegate",
+					message: "delegate needs attention",
 				},
 				intercom: { to: "main", message: "SUBAGENT NEEDS ATTENTION: worker in run run-3." },
 			})}\n`, "utf-8");
@@ -559,13 +559,13 @@ describe("async job tracker", { skip: !available ? "pi packages not available" :
 			const tracker = trackerMod!.createAsyncJobTracker(recorder.pi, state as never, asyncRoot, {
 				pollIntervalMs: 10,
 			});
-			tracker.handleStarted({ id: "run-3", asyncDir: runDir, agent: "worker" });
+			tracker.handleStarted({ id: "run-3", asyncDir: runDir, agent: "delegate" });
 
 			await new Promise((resolve) => setTimeout(resolve, 40));
 
 			const controlEvent = recorder.events.find((event) => event.channel === "subagent:control-event");
 			assert.ok(controlEvent);
-			assert.match((controlEvent.data as { noticeText?: string }).noticeText ?? "", /subagent-worker-run-3-1/);
+			assert.match((controlEvent.data as { noticeText?: string }).noticeText ?? "", /subagent-delegate-run-3-1/);
 			assert.equal(recorder.events.some((event) => event.channel === "subagent:control-intercom"), true);
 		} finally {
 			removeTempDir(asyncRoot);

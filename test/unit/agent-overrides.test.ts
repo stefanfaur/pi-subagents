@@ -53,7 +53,7 @@ describe("builtin agent overrides", () => {
 		writeJson(path.join(tempHome, ".pi", "agent", "settings.json"), {
 			subagents: {
 				agentOverrides: {
-					reviewer: {
+					delegate: {
 						model: "openai/gpt-5.4",
 						thinking: "xhigh",
 						systemPromptMode: "replace",
@@ -64,60 +64,60 @@ describe("builtin agent overrides", () => {
 			},
 		});
 
-		const reviewer = discoverAgents(tempProject, "both").agents.find((agent) => agent.name === "reviewer");
-		assert.ok(reviewer);
-		assert.equal(reviewer.source, "builtin");
-		assert.equal(reviewer.model, "openai/gpt-5.4");
-		assert.equal(reviewer.thinking, "xhigh");
-		assert.equal(reviewer.systemPromptMode, "replace");
-		assert.equal(reviewer.inheritProjectContext, true);
-		assert.equal(reviewer.inheritSkills, true);
-		assert.equal(reviewer.override?.scope, "user");
-		assert.equal(reviewer.override?.path, path.join(tempHome, ".pi", "agent", "settings.json"));
+		const delegate = discoverAgents(tempProject, "both").agents.find((agent) => agent.name === "delegate");
+		assert.ok(delegate);
+		assert.equal(delegate.source, "builtin");
+		assert.equal(delegate.model, "openai/gpt-5.4");
+		assert.equal(delegate.thinking, "xhigh");
+		assert.equal(delegate.systemPromptMode, "replace");
+		assert.equal(delegate.inheritProjectContext, true);
+		assert.equal(delegate.inheritSkills, true);
+		assert.equal(delegate.override?.scope, "user");
+		assert.equal(delegate.override?.path, path.join(tempHome, ".pi", "agent", "settings.json"));
 	});
 
 	it("prefers project settings overrides over user settings overrides", () => {
 		fs.mkdirSync(path.join(tempProject, ".pi"), { recursive: true });
 		writeJson(path.join(tempHome, ".pi", "agent", "settings.json"), {
-			subagents: { agentOverrides: { reviewer: { model: "openai/gpt-5.4" } } },
+			subagents: { agentOverrides: { delegate: { model: "openai/gpt-5.4" } } },
 		});
 		writeJson(path.join(tempProject, ".pi", "settings.json"), {
-			subagents: { agentOverrides: { reviewer: { model: "openai-codex/gpt-5.4-mini", thinking: "high" } } },
+			subagents: { agentOverrides: { delegate: { model: "openai-codex/gpt-5.4-mini", thinking: "high" } } },
 		});
 
-		const reviewer = discoverAgents(tempProject, "both").agents.find((agent) => agent.name === "reviewer");
-		assert.ok(reviewer);
-		assert.equal(reviewer.model, "openai-codex/gpt-5.4-mini");
-		assert.equal(reviewer.thinking, "high");
-		assert.equal(reviewer.override?.scope, "project");
-		assert.equal(reviewer.override?.path, path.join(tempProject, ".pi", "settings.json"));
+		const delegate = discoverAgents(tempProject, "both").agents.find((agent) => agent.name === "delegate");
+		assert.ok(delegate);
+		assert.equal(delegate.model, "openai-codex/gpt-5.4-mini");
+		assert.equal(delegate.thinking, "high");
+		assert.equal(delegate.override?.scope, "project");
+		assert.equal(delegate.override?.path, path.join(tempProject, ".pi", "settings.json"));
 	});
 
 	it("does not apply project settings overrides when scope is user", () => {
 		fs.mkdirSync(path.join(tempProject, ".pi"), { recursive: true });
 		writeJson(path.join(tempHome, ".pi", "agent", "settings.json"), {
-			subagents: { agentOverrides: { reviewer: { model: "openai/gpt-5.4" } } },
+			subagents: { agentOverrides: { delegate: { model: "openai/gpt-5.4" } } },
 		});
 		writeJson(path.join(tempProject, ".pi", "settings.json"), {
-			subagents: { agentOverrides: { reviewer: { model: "openai-codex/gpt-5.4-mini" } } },
+			subagents: { agentOverrides: { delegate: { model: "openai-codex/gpt-5.4-mini" } } },
 		});
 
-		const reviewer = discoverAgents(tempProject, "user").agents.find((agent) => agent.name === "reviewer");
-		assert.ok(reviewer);
-		assert.equal(reviewer.model, "openai/gpt-5.4");
-		assert.equal(reviewer.override?.scope, "user");
+		const delegate = discoverAgents(tempProject, "user").agents.find((agent) => agent.name === "delegate");
+		assert.ok(delegate);
+		assert.equal(delegate.model, "openai/gpt-5.4");
+		assert.equal(delegate.override?.scope, "user");
 	});
 
 	it("does not apply user settings overrides when scope is project", () => {
 		fs.mkdirSync(path.join(tempProject, ".pi"), { recursive: true });
 		writeJson(path.join(tempHome, ".pi", "agent", "settings.json"), {
-			subagents: { agentOverrides: { reviewer: { model: "openai/gpt-5.4" } } },
+			subagents: { agentOverrides: { delegate: { model: "openai/gpt-5.4" } } },
 		});
 
-		const reviewer = discoverAgents(tempProject, "project").agents.find((agent) => agent.name === "reviewer");
-		assert.ok(reviewer);
-		assert.notEqual(reviewer.model, "openai/gpt-5.4");
-		assert.equal(reviewer.override, undefined);
+		const delegate = discoverAgents(tempProject, "project").agents.find((agent) => agent.name === "delegate");
+		assert.ok(delegate);
+		assert.notEqual(delegate.model, "openai/gpt-5.4");
+		assert.equal(delegate.override, undefined);
 	});
 
 	it("does not read malformed out-of-scope settings files", () => {
@@ -125,33 +125,33 @@ describe("builtin agent overrides", () => {
 		fs.mkdirSync(path.join(tempHome, ".pi", "agent"), { recursive: true });
 		fs.writeFileSync(path.join(tempHome, ".pi", "agent", "settings.json"), '{"subagents":', "utf-8");
 		writeJson(path.join(tempProject, ".pi", "settings.json"), {
-			subagents: { agentOverrides: { reviewer: { model: "openai-codex/gpt-5.4-mini" } } },
+			subagents: { agentOverrides: { delegate: { model: "openai-codex/gpt-5.4-mini" } } },
 		});
 
-		const reviewer = discoverAgents(tempProject, "project").agents.find((agent) => agent.name === "reviewer");
-		assert.ok(reviewer);
-		assert.equal(reviewer.model, "openai-codex/gpt-5.4-mini");
-		assert.equal(reviewer.override?.scope, "project");
+		const delegate = discoverAgents(tempProject, "project").agents.find((agent) => agent.name === "delegate");
+		assert.ok(delegate);
+		assert.equal(delegate.model, "openai-codex/gpt-5.4-mini");
+		assert.equal(delegate.override?.scope, "project");
 	});
 
 	it("does not apply builtin settings overrides when a full project agent overrides the builtin", () => {
 		fs.mkdirSync(path.join(tempProject, ".pi"), { recursive: true });
 		writeJson(path.join(tempProject, ".pi", "settings.json"), {
-			subagents: { agentOverrides: { reviewer: { model: "openai/gpt-5.4" } } },
+			subagents: { agentOverrides: { delegate: { model: "openai/gpt-5.4" } } },
 		});
-		writeProjectAgent(tempProject, "reviewer", `---\nname: reviewer\ndescription: Project reviewer\nmodel: google/gemini-3-pro\n---\n\nUse the project reviewer.\n`);
+		writeProjectAgent(tempProject, "delegate", `---\nname: delegate\ndescription: Project delegate\nmodel: google/gemini-3-pro\n---\n\nUse the project delegate.\n`);
 
-		const reviewer = discoverAgents(tempProject, "both").agents.find((agent) => agent.name === "reviewer");
-		assert.ok(reviewer);
-		assert.equal(reviewer.source, "project");
-		assert.equal(reviewer.model, "google/gemini-3-pro");
-		assert.equal(reviewer.override, undefined);
+		const delegate = discoverAgents(tempProject, "both").agents.find((agent) => agent.name === "delegate");
+		assert.ok(delegate);
+		assert.equal(delegate.source, "project");
+		assert.equal(delegate.model, "google/gemini-3-pro");
+		assert.equal(delegate.override, undefined);
 	});
 
 	it("does not create a settings file when removing a non-existent override", () => {
 		const settingsPath = path.join(tempHome, ".pi", "agent", "settings.json");
 		assert.equal(fs.existsSync(settingsPath), false);
-		removeBuiltinAgentOverride(tempProject, "reviewer", "user");
+		removeBuiltinAgentOverride(tempProject, "delegate", "user");
 		assert.equal(fs.existsSync(settingsPath), false);
 	});
 
@@ -185,7 +185,7 @@ describe("builtin agent overrides", () => {
 		writeJson(settingsPath, {
 			subagents: {
 				agentOverrides: {
-					reviewer: {
+					delegate: {
 						inheritProjectContext: "true",
 					},
 				},
@@ -196,7 +196,7 @@ describe("builtin agent overrides", () => {
 			() => discoverAgents(tempProject, "both"),
 			(error: unknown) => error instanceof Error
 				&& error.message.includes(settingsPath)
-				&& error.message.includes("reviewer")
+				&& error.message.includes("delegate")
 				&& error.message.includes("inheritProjectContext"),
 		);
 	});
