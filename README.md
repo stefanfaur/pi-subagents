@@ -9,7 +9,7 @@
 ## Installation
 
 ```bash
-pi install github:stefanfaur/pi-subagents
+pi install git:github.com/stefanfaur/pi-subagents
 ```
 
 That is the only required step. You can add optional pieces later.
