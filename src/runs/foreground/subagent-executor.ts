@@ -29,7 +29,141 @@ import {
 	type SequentialStep,
 	type StepOverrides,
 } from "../../shared/settings.ts";
-import { discoverAvailableSkills, normalizeSkillInput } from "../../agents/skills.ts";
+
+const DEFAULT_SKILL_AGENT_TOOLS = ["read", "bash", "write", "edit"];
+
+function splitToolList(rawTools: string[] | undefined): { tools: string[]; mcpDirectTools: string[] } {
+	const mcpDirectTools: string[] = [];
+	const tools: string[] = [];
+	for (const tool of rawTools ?? []) {
+		if (tool.startsWith("mcp:")) {
+			mcpDirectTools.push(tool.slice(4));
+		} else {
+			tools.push(tool);
+		}
+	}
+	return { tools, mcpDirectTools };
+}
+
+function resolveSkillAsAgent(
+	skillName: string,
+	cwd: string,
+	agents: AgentConfig[],
+): AgentConfig | { error: string } {
+	const resolved = getSkillFrontmatter(skillName, cwd);
+	if (!resolved) {
+		const available = discoverAvailableSkills(cwd).map(s => s.name).join(", ");
+		return { error: `Skill '${skillName}' not found. Available skills: ${available}` };
+	}
+	if (resolved.frontmatter.standalone !== "true") {
+		return { error: `Skill '${skillName}' is not configured to run as a standalone agent. Add 'standalone: true' to its SKILL.md frontmatter.` };
+	}
+
+	const runtimeName = `skill:${skillName}`;
+	const existing = agents.find(a => a.name === runtimeName);
+	if (existing) return existing;
+
+	const rawTools = resolved.frontmatter.tools
+		?.split(",").map((t) => t.trim()).filter(Boolean);
+	const { tools, mcpDirectTools } = splitToolList(rawTools);
+
+	const agentConfig: AgentConfig = {
+		name: runtimeName,
+		localName: `skill:${skillName}`,
+		description: resolved.frontmatter.description ?? skillName,
+		systemPrompt: resolved.body,
+		systemPromptMode: resolved.frontmatter.systemPromptMode === "append" ? "append" : "replace",
+		inheritProjectContext: resolved.frontmatter.inheritProjectContext !== "false",
+		inheritSkills: resolved.frontmatter.inheritSkills === "true",
+		source: "skill",
+		filePath: resolved.filePath,
+		tools: tools.length > 0 ? tools : DEFAULT_SKILL_AGENT_TOOLS,
+		mcpDirectTools: mcpDirectTools.length > 0 ? mcpDirectTools : undefined,
+		model: resolved.frontmatter.model,
+		thinking: resolved.frontmatter.thinking,
+		defaultContext: resolved.frontmatter.defaultContext === "fork" ? "fork"
+			: resolved.frontmatter.defaultContext === "fresh" ? "fresh"
+			: undefined,
+	};
+
+	agents.push(agentConfig);
+	return agentConfig;
+}
+
+function normalizeSkillParams(
+	params: SubagentParamsLike,
+	cwd: string,
+	agents: AgentConfig[],
+): { params?: SubagentParamsLike; error?: AgentToolResult<Details> } {
+	// Single mode: skill as agent
+	if (typeof params.skill === "string" && !params.agent && !params.tasks && !params.chain) {
+		const resolved = resolveSkillAsAgent(params.skill, cwd, agents);
+		if ("error" in resolved) {
+			return { error: { content: [{ type: "text", text: resolved.error }], isError: true, details: { mode: "single", results: [] } } };
+		}
+		return { params: { ...params, agent: resolved.name, skill: undefined } };
+	}
+
+	// Error on skill arrays/booleans without agent in single mode
+	if (!params.agent && !params.tasks && !params.chain && params.skill !== undefined && typeof params.skill !== "string") {
+		const hint = typeof params.skill === "boolean"
+			? "Provide an agent name to use skill=false, or use a standalone skill name."
+			: "Skill arrays are for injection into a named agent. Provide an agent name.";
+		return { error: { content: [{ type: "text", text: hint }], isError: true, details: { mode: "single", results: [] } } };
+	}
+
+	// Parallel tasks: resolve skill→agent on tasks without agent
+	if (params.tasks) {
+		try {
+			const resolvedTasks = params.tasks.map((task) => {
+				if (!task.agent && typeof task.skill === "string") {
+					const resolved = resolveSkillAsAgent(task.skill, cwd, agents);
+					if ("error" in resolved) throw new Error(resolved.error);
+					return { ...task, agent: resolved.name, skill: undefined };
+				}
+				return task;
+			});
+			return { params: { ...params, tasks: resolvedTasks } };
+		} catch (err) {
+			return { error: { content: [{ type: "text", text: err instanceof Error ? err.message : String(err) }], isError: true, details: { mode: "parallel", results: [] } } };
+		}
+	}
+
+	// Chain steps: resolve skill→agent on steps without agent
+	if (params.chain) {
+		try {
+			const resolvedChain = params.chain.map((step) => {
+				if (isParallelStep(step)) {
+					return {
+						...step,
+						parallel: step.parallel.map((task) => {
+							if (!task.agent && typeof task.skill === "string") {
+								const resolved = resolveSkillAsAgent(task.skill, cwd, agents);
+								if ("error" in resolved) throw new Error(resolved.error);
+								return { ...task, agent: resolved.name, skill: undefined };
+							}
+							return task;
+						}),
+					};
+				}
+				const seq = step as SequentialStep;
+				if (!seq.agent && typeof seq.skill === "string") {
+					const resolved = resolveSkillAsAgent(seq.skill, cwd, agents);
+					if ("error" in resolved) throw new Error(resolved.error);
+					return { ...seq, agent: resolved.name, skill: undefined };
+				}
+				return step;
+			});
+			return { params: { ...params, chain: resolvedChain } };
+		} catch (err) {
+			return { error: { content: [{ type: "text", text: err instanceof Error ? err.message : String(err) }], isError: true, details: { mode: "chain", results: [] } } };
+		}
+	}
+
+	return { params };
+}
+
+import { discoverAvailableSkills, getSkillFrontmatter, normalizeSkillInput } from "../../agents/skills.ts";
 import { executeAsyncChain, executeAsyncSingle, formatAsyncStartedMessage, isAsyncAvailable } from "../background/async-execution.ts";
 import { createForkContextResolver } from "../../shared/fork-context.ts";
 import { resolveCurrentSessionId } from "../../shared/session-identity.ts";
@@ -2090,6 +2224,9 @@ export function createSubagentExecutor(deps: ExecutorDeps): {
 		deps.state.currentSessionId = resolveCurrentSessionId(ctx.sessionManager);
 		const discoveredAgents = deps.discoverAgents(effectiveCwd, scope).agents;
 		effectiveParams = applyAgentDefaultContext(effectiveParams, discoveredAgents);
+		const skillNormalized = normalizeSkillParams(effectiveParams, effectiveCwd, discoveredAgents);
+		if (skillNormalized.error) return skillNormalized.error;
+		effectiveParams = skillNormalized.params!;
 		const sessionName = resolveIntercomSessionTarget(deps.pi.getSessionName(), ctx.sessionManager.getSessionId());
 		const intercomBridge = resolveIntercomBridge({
 			config: deps.config.intercomBridge,

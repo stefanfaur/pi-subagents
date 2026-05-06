@@ -6,6 +6,7 @@ import { execSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
+import { parseFrontmatter } from "./frontmatter.ts";
 
 export type SkillSource =
 	| "project"
@@ -44,6 +45,13 @@ interface SkillSearchPath {
 }
 
 const skillCache = new Map<string, SkillCacheEntry>();
+
+const skillFrontmatterCache = new Map<string, {
+	mtime: number;
+	frontmatter: Record<string, string>;
+	body: string;
+}>();
+
 const MAX_CACHE_SIZE = 50;
 
 let loadSkillsCache: { cwd: string; skills: CachedSkillEntry[]; timestamp: number } | null = null;
@@ -626,5 +634,26 @@ export function discoverAvailableSkills(cwd: string): Array<{
 
 export function clearSkillCache(): void {
 	skillCache.clear();
+	skillFrontmatterCache.clear();
 	loadSkillsCache = null;
+}
+
+export function getSkillFrontmatter(
+	skillName: string,
+	cwd: string,
+): { frontmatter: Record<string, string>; body: string; filePath: string } | undefined {
+	const location = resolveSkillPath(skillName, cwd);
+	if (!location) return undefined;
+
+	const stat = fs.statSync(location.path);
+	const cached = skillFrontmatterCache.get(location.path);
+	if (cached && cached.mtime === stat.mtimeMs) {
+		return { frontmatter: cached.frontmatter, body: cached.body, filePath: location.path };
+	}
+
+	const raw = fs.readFileSync(location.path, "utf-8");
+	const { frontmatter } = parseFrontmatter(raw);
+	const body = stripSkillFrontmatter(raw);
+	skillFrontmatterCache.set(location.path, { mtime: stat.mtimeMs, frontmatter, body });
+	return { frontmatter, body, filePath: location.path };
 }

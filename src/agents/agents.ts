@@ -11,12 +11,13 @@ import { KNOWN_FIELDS } from "./agent-serializer.ts";
 import { parseChain } from "./chain-serializer.ts";
 import { mergeAgentsForScope } from "./agent-selection.ts";
 import { parseFrontmatter } from "./frontmatter.ts";
+import { discoverAvailableSkills, getSkillFrontmatter } from "./skills.ts";
 import { buildRuntimeName, parsePackageName } from "./identity.ts";
 export { buildRuntimeName, frontmatterNameForConfig, parsePackageName } from "./identity.ts";
 
 export type AgentScope = "user" | "project" | "both";
 
-export type AgentSource = "builtin" | "user" | "project";
+export type AgentSource = "builtin" | "user" | "project" | "skill";
 type SystemPromptMode = "append" | "replace";
 export type AgentDefaultContext = "fresh" | "fork";
 
@@ -148,6 +149,53 @@ function splitToolList(rawTools: string[] | undefined): { tools?: string[]; mcpD
 		...(tools.length > 0 ? { tools } : {}),
 		...(mcpDirectTools.length > 0 ? { mcpDirectTools } : {}),
 	};
+}
+
+const DEFAULT_SKILL_AGENT_TOOLS = ["read", "bash", "write", "edit"];
+
+function discoverSkillAgents(cwd: string): AgentConfig[] {
+	const skills = discoverAvailableSkills(cwd);
+	const agents: AgentConfig[] = [];
+
+	for (const skill of skills) {
+		const resolved = getSkillFrontmatter(skill.name, cwd);
+		if (!resolved) continue;
+		const { frontmatter, body } = resolved;
+
+		if (frontmatter.standalone !== "true") continue;
+
+		const runtimeName = `skill:${skill.name}`;
+		const rawTools = frontmatter.tools
+			?.split(",")
+			.map((t) => t.trim())
+			.filter(Boolean);
+
+		const { tools, mcpDirectTools } = splitToolList(rawTools ?? DEFAULT_SKILL_AGENT_TOOLS);
+
+		agents.push({
+			name: runtimeName,
+			localName: `skill:${skill.name}`,
+			description: skill.description ?? skill.name,
+			tools: tools?.length ? tools : DEFAULT_SKILL_AGENT_TOOLS,
+			mcpDirectTools,
+			model: frontmatter.model,
+			fallbackModels: frontmatter.fallbackModels
+				? frontmatter.fallbackModels.split(",").map((m) => m.trim()).filter(Boolean)
+				: undefined,
+			thinking: frontmatter.thinking,
+			systemPromptMode: frontmatter.systemPromptMode === "append" ? "append" : "replace",
+			inheritProjectContext: frontmatter.inheritProjectContext !== "false",
+			inheritSkills: frontmatter.inheritSkills === "true",
+			defaultContext: frontmatter.defaultContext === "fork" ? "fork"
+				: frontmatter.defaultContext === "fresh" ? "fresh"
+				: undefined,
+			systemPrompt: body,
+			source: "skill",
+			filePath: resolved.filePath,
+		});
+	}
+
+	return agents;
 }
 
 function joinToolList(config: Pick<AgentConfig, "tools" | "mcpDirectTools">): string[] | undefined {
@@ -731,8 +779,10 @@ export function discoverAgents(cwd: string, scope: AgentScope): AgentDiscoveryRe
 	const userSettings = scope === "project" ? EMPTY_SUBAGENT_SETTINGS : readSubagentSettings(userSettingsPath);
 	const projectSettings = scope === "user" ? EMPTY_SUBAGENT_SETTINGS : readSubagentSettings(projectSettingsPath);
 
+	const rawBuiltin = loadAgentsFromDir(BUILTIN_AGENTS_DIR, "builtin");
+	const skillAgents = cwd ? discoverSkillAgents(cwd) : [];
 	const builtinAgents = applyBuiltinOverrides(
-		loadAgentsFromDir(BUILTIN_AGENTS_DIR, "builtin"),
+		[...rawBuiltin, ...skillAgents],
 		userSettings,
 		projectSettings,
 		userSettingsPath,
@@ -772,8 +822,10 @@ export function discoverAgentsAll(cwd: string): {
 	const userSettings = readSubagentSettings(userSettingsPath);
 	const projectSettings = readSubagentSettings(projectSettingsPath);
 
+	const rawBuiltin = loadAgentsFromDir(BUILTIN_AGENTS_DIR, "builtin");
+	const skillAgents = cwd ? discoverSkillAgents(cwd) : [];
 	const builtin = applyBuiltinOverrides(
-		loadAgentsFromDir(BUILTIN_AGENTS_DIR, "builtin"),
+		[...rawBuiltin, ...skillAgents],
 		userSettings,
 		projectSettings,
 		userSettingsPath,
